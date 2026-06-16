@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; img-src 'self' data: file: https:; style-src 'self' 'unsafe-inline'; script-src 'self';"
+  />
+  <title>Arcadia</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Custom title bar (native window controls overlay the right side) -->
+  <header class="titlebar">
+    <div class="brand">
+      <span class="brand-logo" data-logo aria-label="Arcadia"></span>
+      <span class="brand-name">Arcadia</span>
+    </div>
+    <div class="titlebar-drag"></div>
+    <div class="tb-actions">
+      <button class="tb-btn tb-close-dc" id="btn-discord-close" data-i18n-title="closeDiscordTip" aria-label="Close Discord" hidden>
+        <span class="ico" data-icon="close"></span>
+      </button>
+      <button class="tb-btn discord" id="btn-discord" title="Discord" aria-label="Discord">
+        <span class="ico" data-icon="discord"></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="app">
+    <aside class="sidebar">
+      <nav class="nav" id="nav"></nav>
+
+      <div class="sidebar-foot">
+        <div class="sidebar-actions">
+          <button class="btn btn-primary" id="btn-scan">
+            <span class="ico" data-icon="refresh"></span><span data-i18n="scan"></span>
+          </button>
+          <button class="btn" id="btn-add">
+            <span class="ico" data-icon="plus"></span><span data-i18n="addGame"></span>
+          </button>
+          <button class="btn btn-ghost" id="btn-settings">
+            <span class="ico" data-icon="gear"></span><span data-i18n="settings"></span>
+          </button>
+        </div>
+
+        <div class="credit">Arcadia · <span data-i18n="by"></span> Samet Ege</div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div class="topbar-title">
+          <h1 id="view-title"></h1>
+          <span class="count" id="view-count"></span>
+        </div>
+        <div class="topbar-tools">
+          <label class="search">
+            <span class="ico" data-icon="search"></span>
+            <input id="search" type="text" data-i18n-ph="searchPlaceholder" spellcheck="false" />
+          </label>
+          <select id="sort" class="select" aria-label="sort">
+            <option value="title" data-i18n="sortTitle"></option>
+            <option value="recent" data-i18n="sortRecent"></option>
+            <option value="played" data-i18n="sortPlayed"></option>
+          </select>
+        </div>
+      </header>
+
+      <section class="grid" id="grid"></section>
+
+      <div class="empty" id="empty" hidden>
+        <span class="empty-logo" data-logo></span>
+        <h2 data-i18n="emptyTitle"></h2>
+        <p data-i18n="emptyText"></p>
+        <button class="btn btn-primary btn-lg" id="empty-scan" data-i18n="emptyScan"></button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Scan overlay -->
+  <div class="overlay" id="scan-overlay" hidden>
+    <div class="scan-box">
+      <div class="spinner"></div>
+      <div class="scan-text" id="scan-text"></div>
+    </div>
+  </div>
+
+  <!-- Right-click / ⋯ menu -->
+  <div class="menu" id="ctx" hidden></div>
+
+  <!-- Settings modal -->
+  <div class="modal-backdrop" id="settings-modal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h2 data-i18n="settings"></h2>
+        <button class="icon-btn" id="settings-close" data-icon="close"></button>
+      </div>
+      <div class="modal-body" id="settings-body"></div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

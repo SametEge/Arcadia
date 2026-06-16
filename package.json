@@ -1,0 +1,55 @@
+{
+  "name": "arcadia",
+  "version": "1.0.0",
+  "description": "Arcadia — tüm oyunların tek bir şık kütüphanede. Steam, Epic ve Xbox oyunlarını otomatik bulur, kapak görselleriyle gösterir ve tek tıkla açar.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "icon": "py build/make_icon.py"
+  },
+  "keywords": [
+    "game-launcher",
+    "steam",
+    "epic-games",
+    "electron",
+    "library"
+  ],
+  "author": "Samet Ege",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^42.4.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.arcadia.launcher",
+    "productName": "Arcadia",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "renderer/**/*",
+      "assets/**/*"
+    ],
+    "artifactName": "Arcadia-Setup-${version}.${ext}",
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Arcadia",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}
