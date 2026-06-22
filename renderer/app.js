@@ -23,7 +23,7 @@ const I18N = {
     closeGameTip: 'Oyunu kapat', gameClosed: '{t} kapatıldı',
     settingsSources: 'Tarama Kaynakları', optFolders: 'Özel klasörler', settingsFolders: 'Özel Oyun Klasörleri',
     noFolders: 'Henüz klasör eklenmedi. Tek tek .exe oyunların olduğu bir klasör ekle.', addFolderBtn: 'Klasör Ekle',
-    settingsAccent: 'Vurgu Rengi', settingsLogo: 'Logo Rengi', settingsLogoShape: 'Logo Şekli', settingsLogoSymbol: 'Logo Simgesi', settingsLanguage: 'Dil', rescanNow: 'Şimdi Yeniden Tara',
+    settingsAccent: 'Vurgu Rengi', settingsLogo: 'Logo Rengi', settingsLogoShape: 'Logo Şekli', settingsLogoSymbol: 'Logo Simgesi', settingsLanguage: 'Dil', rescanNow: 'Şimdi Yeniden Tara', replayTour: 'Tanıtımı tekrar göster',
     coverHint: 'Steam oyunları otomatik kapakla gelir. Diğerlerinde sağ tık → Kapak değiştir ile kendi görselini koyabilirsin.',
     settingsAbout: 'Hakkında', aboutSub: 'Oyun kütüphanen · Geliştiren Samet Ege',
     settingsCovers: 'Kapak Görselleri (SteamGridDB)', sgdbPlaceholder: 'SteamGridDB API anahtarı',
@@ -54,7 +54,7 @@ const I18N = {
     closeGameTip: 'Close game', gameClosed: '{t} closed',
     settingsSources: 'Scan Sources', optFolders: 'Custom folders', settingsFolders: 'Custom Game Folders',
     noFolders: 'No folders yet. Add a folder that contains standalone .exe games.', addFolderBtn: 'Add Folder',
-    settingsAccent: 'Accent Color', settingsLogo: 'Logo Color', settingsLogoShape: 'Logo Shape', settingsLogoSymbol: 'Logo Symbol', settingsLanguage: 'Language', rescanNow: 'Rescan Now',
+    settingsAccent: 'Accent Color', settingsLogo: 'Logo Color', settingsLogoShape: 'Logo Shape', settingsLogoSymbol: 'Logo Symbol', settingsLanguage: 'Language', rescanNow: 'Rescan Now', replayTour: 'Replay tour',
     coverHint: 'Steam games come with automatic covers. For others, right-click → Change cover to set your own image.',
     settingsAbout: 'About', aboutSub: 'Your game library · by Samet Ege',
     settingsCovers: 'Cover Art (SteamGridDB)', sgdbPlaceholder: 'SteamGridDB API key',
@@ -85,7 +85,7 @@ const I18N = {
     closeGameTip: 'Spiel schließen', gameClosed: '{t} geschlossen',
     settingsSources: 'Scan-Quellen', optFolders: 'Eigene Ordner', settingsFolders: 'Eigene Spielordner',
     noFolders: 'Noch keine Ordner. Füge einen Ordner mit .exe-Spielen hinzu.', addFolderBtn: 'Ordner hinzufügen',
-    settingsAccent: 'Akzentfarbe', settingsLogo: 'Logo-Farbe', settingsLogoShape: 'Logo-Form', settingsLogoSymbol: 'Logo-Symbol', settingsLanguage: 'Sprache', rescanNow: 'Jetzt neu scannen',
+    settingsAccent: 'Akzentfarbe', settingsLogo: 'Logo-Farbe', settingsLogoShape: 'Logo-Form', settingsLogoSymbol: 'Logo-Symbol', settingsLanguage: 'Sprache', rescanNow: 'Jetzt neu scannen', replayTour: 'Tour wiederholen',
     coverHint: 'Steam-Spiele haben automatische Cover. Bei anderen: Rechtsklick → Cover ändern, um ein eigenes Bild zu setzen.',
     settingsAbout: 'Über', aboutSub: 'Deine Spielebibliothek · von Samet Ege',
     settingsCovers: 'Cover-Bilder (SteamGridDB)', sgdbPlaceholder: 'SteamGridDB API-Schlüssel',
@@ -116,7 +116,7 @@ const I18N = {
     closeGameTip: 'ゲームを閉じる', gameClosed: '{t} を閉じました',
     settingsSources: 'スキャンソース', optFolders: 'カスタムフォルダー', settingsFolders: 'カスタムゲームフォルダー',
     noFolders: 'まだフォルダーがありません。.exe ゲームが入ったフォルダーを追加してください。', addFolderBtn: 'フォルダーを追加',
-    settingsAccent: 'アクセントカラー', settingsLogo: 'ロゴの色', settingsLogoShape: 'ロゴの形', settingsLogoSymbol: 'ロゴの記号', settingsLanguage: '言語', rescanNow: '今すぐ再スキャン',
+    settingsAccent: 'アクセントカラー', settingsLogo: 'ロゴの色', settingsLogoShape: 'ロゴの形', settingsLogoSymbol: 'ロゴの記号', settingsLanguage: '言語', rescanNow: '今すぐ再スキャン', replayTour: 'ツアーを再生',
     coverHint: 'Steamゲームには自動でカバーが付きます。その他は右クリック →「カバーを変更」で自分の画像を設定できます。',
     settingsAbout: '情報', aboutSub: 'あなたのゲームライブラリ · 制作 Samet Ege',
     settingsCovers: 'カバー画像 (SteamGridDB)', sgdbPlaceholder: 'SteamGridDB APIキー',
@@ -147,7 +147,7 @@ const I18N = {
     closeGameTip: '게임 닫기', gameClosed: '{t} 닫힘',
     settingsSources: '스캔 소스', optFolders: '사용자 폴더', settingsFolders: '사용자 게임 폴더',
     noFolders: '아직 폴더가 없습니다. .exe 게임이 있는 폴더를 추가하세요.', addFolderBtn: '폴더 추가',
-    settingsAccent: '강조 색상', settingsLogo: '로고 색상', settingsLogoShape: '로고 모양', settingsLogoSymbol: '로고 기호', settingsLanguage: '언어', rescanNow: '지금 다시 스캔',
+    settingsAccent: '강조 색상', settingsLogo: '로고 색상', settingsLogoShape: '로고 모양', settingsLogoSymbol: '로고 기호', settingsLanguage: '언어', rescanNow: '지금 다시 스캔', replayTour: '둘러보기 다시 보기',
     coverHint: 'Steam 게임은 자동으로 커버가 표시됩니다. 그 외에는 마우스 오른쪽 클릭 → 커버 변경으로 직접 이미지를 설정하세요.',
     settingsAbout: '정보', aboutSub: '나의 게임 라이브러리 · 제작 Samet Ege',
     settingsCovers: '커버 이미지 (SteamGridDB)', sgdbPlaceholder: 'SteamGridDB API 키',
@@ -178,7 +178,7 @@ const I18N = {
     closeGameTip: 'Cerrar juego', gameClosed: '{t} cerrado',
     settingsSources: 'Fuentes de escaneo', optFolders: 'Carpetas personalizadas', settingsFolders: 'Carpetas de juegos',
     noFolders: 'Aún no hay carpetas. Añade una carpeta con juegos .exe.', addFolderBtn: 'Añadir carpeta',
-    settingsAccent: 'Color de acento', settingsLogo: 'Color del logo', settingsLogoShape: 'Forma del logo', settingsLogoSymbol: 'Símbolo del logo', settingsLanguage: 'Idioma', rescanNow: 'Volver a escanear',
+    settingsAccent: 'Color de acento', settingsLogo: 'Color del logo', settingsLogoShape: 'Forma del logo', settingsLogoSymbol: 'Símbolo del logo', settingsLanguage: 'Idioma', rescanNow: 'Volver a escanear', replayTour: 'Repetir tutorial',
     coverHint: 'Los juegos de Steam traen carátulas automáticas. Para los demás, clic derecho → Cambiar carátula para poner tu propia imagen.',
     settingsAbout: 'Acerca de', aboutSub: 'Tu biblioteca de juegos · por Samet Ege',
     settingsCovers: 'Carátulas (SteamGridDB)', sgdbPlaceholder: 'Clave API de SteamGridDB',
@@ -521,7 +521,9 @@ function card(g) {
     const img = el('img', 'cover');
     img.alt = title; img.loading = 'lazy'; img.src = cover;
     img.onerror = () => {
-      if (g.coverFallback && img.src !== g.coverFallback) img.src = g.coverFallback;
+      // Fall back: store art → Steam header → SteamGridDB cover → placeholder.
+      if (g.coverFallback && img.src !== g.coverFallback && img.src !== g.autoCover) img.src = g.coverFallback;
+      else if (g.autoCover && img.src !== g.autoCover) img.src = g.autoCover;
       else { img.remove(); thumb.prepend(placeholder(g)); }
     };
     thumb.appendChild(img);
@@ -1135,6 +1137,10 @@ function buildSettings() {
   const rescan = el('button', 'btn btn-primary', `<span class="ico">${icon('refresh')}</span>${esc(t('rescanNow'))}`);
   rescan.onclick = () => { closeSettings(); runScan(); };
   g5.appendChild(rescan);
+  const tour = el('button', 'btn', esc(t('replayTour')));
+  tour.style.marginTop = '8px';
+  tour.onclick = () => { closeSettings(); setTimeout(runOnboarding, 220); };
+  g5.appendChild(tour);
   g5.appendChild(el('p', 'hint', t('coverHint')));
   body.appendChild(g5);
 

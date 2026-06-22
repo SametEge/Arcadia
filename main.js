@@ -170,23 +170,29 @@ ipcMain.handle('library:scan', async () => {
   return result;
 });
 
+// Bundled SteamGridDB key, provided by the user for open-source distribution so
+// covers work out of the box. A user's own key (Settings) overrides it.
+const DEFAULT_SGDB_KEY = '30946d90d42ccc90529855533c0370f4';
+
 // Gaming tools/companions that aren't games — they would wrongly match similarly
 // named indie games on SteamGridDB (FACEIT→"Face It", Blitz→"Blitz Breaker",
 // Wand→"Wand Wars"…), so we never assign them cover art; they keep their real icon.
 const NOT_A_GAME = /\b(faceit|blitz|wand|mobalytics|tft\s?academy|gankster|r2modman|overwolf|discord|playnite|medal|wallpaper\s?engine|afterburner|obs\s?studio)\b/i;
 
 // Fetch SteamGridDB cover art for games that lack a real cover (Xbox, launchers,
-// Riot…). Runs in the background after a scan and pushes each cover to the
-// renderer as it arrives. Minecraft keeps its hand-drawn tile; tools are skipped.
+// Riot…) and as a fallback for Steam games whose store art is missing. Runs in
+// the background after a scan; Minecraft keeps its hand-drawn tile, tools skipped.
 let coversBusy = false;
 async function fillCovers() {
   if (coversBusy) return;
-  const key = library.getSettings().sgdbKey;
+  const key = library.getSettings().sgdbKey || DEFAULT_SGDB_KEY;
   if (!key) return;
   coversBusy = true;
   try {
     for (const g of library.getState().games) {
-      if (g.source === 'steam' || g.customCover || g.autoCover) continue;
+      if (g.customCover || g.autoCover) continue;
+      // Steam already has art unless it shipped no local cover (e.g. ZZZ → 404).
+      if (g.source === 'steam' && g.localCover) continue;
       if (/minecraft/i.test(g.title || '') || NOT_A_GAME.test(g.title || '')) continue;
       let url = null;
       try { url = await sgdb.findCover(g.customTitle || g.title, key); } catch { /* skip */ }

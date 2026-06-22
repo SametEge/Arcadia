@@ -1,6 +1,6 @@
 {
   "name": "arcadia",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Arcadia — tüm oyunların tek bir şık kütüphanede. Steam, Epic ve Xbox oyunlarını otomatik bulur, kapak görselleriyle gösterir ve tek tıkla açar.",
   "main": "main.js",
   "scripts": {

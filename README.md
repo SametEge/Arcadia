@@ -49,11 +49,21 @@ Auto-detect: Turkish/Azerbaijani → Turkish, German → German, Japanese → Ja
 
 ## ⬇️ Download & Install
 
-1. Download **`Arcadia-Setup-x.x.x.exe`** from the [Releases](../../releases) page.
-2. Run it. Windows SmartScreen may show an **"unknown publisher"** warning because the installer is not code-signed yet — click **More info → Run anyway**.
-3. Follow the installer. Arcadia adds Start-menu and desktop shortcuts and opens automatically, then scans your games.
+1. Download **`Arcadia-Setup-1.0.2.exe`** from the [Releases](../../releases) page.
+2. Run it (see the SmartScreen note below).
+3. Follow the installer — Arcadia adds Start-menu and desktop shortcuts and opens automatically, then scans your games.
 
 > Uninstalling keeps your library and settings (they live in `%APPDATA%\Arcadia`).
+
+### ⚠️ "Windows protected your PC" (SmartScreen)?
+
+This warning is **normal and expected** — it does **not** mean anything is wrong with Arcadia. To continue:
+
+> **More info → Run anyway**
+
+**Why it appears:** Windows SmartScreen warns about *any* installer that isn't signed with a **paid** code-signing certificate from a Certificate Authority. Code signing is **unrelated to whether a project is open source** — many trustworthy open-source apps show the exact same warning until their author buys a certificate.
+
+Because Arcadia is fully open source, you don't have to take the prebuilt installer on trust — you can **read every line of the code and [build it yourself](#-build-from-source)**; the result is identical. Signed, warning-free releases will follow if the project gets a code-signing certificate.
 
 ## 🖼️ Cover art (optional SteamGridDB key)
 
