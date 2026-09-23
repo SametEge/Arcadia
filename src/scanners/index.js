@@ -6,6 +6,9 @@ const { scanXbox } = require('./xbox');
 const { scanFolders } = require('./folders');
 const { scanShortcuts } = require('./shortcuts');
 const { scanRiot } = require('./riot');
+const { scanUbisoft } = require('./ubisoft');
+const { scanGog } = require('./gog');
+const { scanEa } = require('./ea');
 
 // Run every enabled source and return a flat list of detected games.
 async function scanAll(settings = {}, onProgress = () => {}) {
@@ -16,6 +19,9 @@ async function scanAll(settings = {}, onProgress = () => {}) {
   if (sources.steam !== false) tasks.push({ key: 'steam', run: () => scanSteam() });
   if (sources.epic !== false) tasks.push({ key: 'epic', run: () => scanEpic() });
   if (sources.xbox !== false) tasks.push({ key: 'xbox', run: () => scanXbox() });
+  if (sources.gog !== false) tasks.push({ key: 'gog', run: () => scanGog() });
+  if (sources.ea !== false) tasks.push({ key: 'ea', run: () => scanEa() });
+  if (sources.ubisoft !== false) tasks.push({ key: 'ubisoft', run: () => scanUbisoft() });
   if (sources.folders !== false && folders.length) {
     tasks.push({ key: 'folders', run: () => scanFolders(folders) });
   }

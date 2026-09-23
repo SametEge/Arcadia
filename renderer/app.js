@@ -1,16 +1,26 @@
 'use strict';
 
 const api = window.arcadia;
-const APP_VERSION = '1.0.0';
+// Filled from the main process (package.json) so it can never drift.
+let APP_VERSION = '';
+// True in the Microsoft Store (MSIX) build: updates and startup are Windows'
+// job there, so the in-app controls for them are hidden.
+let IS_STORE = false;
 
 /* ------------------------------ i18n ----------------------------------- */
 const I18N = {
   tr: {
     scan: 'Tara', addGame: 'Oyun Ekle', settings: 'Ayarlar', by: 'Geliştiren',
+    sortRating: 'Puana göre', metacriticLabel: 'Metacritic',
+    steamListsSection: 'Steam Listeleri', steamListsLabel: 'Steam listelerini göster', steamListsAskTitle: 'Steam listelerin bulundu', steamListsAskText: '{n} liste buldum ({names}). Bunları sol menüye ekleyeyim mi?', steamListsYes: 'Evet, ekle', steamListsNo: 'Hayır', steamListsNone: "Steam'de liste bulunamadı.", steamListsRefresh: 'Listeleri yenile', steamListsHint: "Steam istemcisindeki koleksiyonların okunur. Yalnızca elle eklenmiş oyunlar gelir; Steam'in kendi kural tabanlı (dinamik) eşleşmeleri gelmez.",
+    listsSection: 'Listeler', listAddTo: 'Listeye ekle', listNew: 'Yeni liste oluştur…', listNewPrompt: 'Liste adı:', listRenamePrompt: 'Yeni liste adı:', listDelete: 'Listeyi sil', listDeleted: '{n} silindi', listAdded: '{t} → {n}', listRemoved: '{t}, {n} listesinden çıkarıldı', listSteamLocked: "Bu oyun listeye Steam'den geliyor; Arcadia Steam'e yazmaz.",
+    listDeleteSteamConfirm: "'{n}' Steam koleksiyonun. Steam'den de (tüm cihazlarından) silinecek. Emin misin?", listDeletedSteam: "{n} Steam'den de silindi", listDeletedSteamPending: "{n} silindi — Steam açık olduğu için Steam'deki koleksiyon, Steam'i kapattığında silinecek.", listSteamApplied: "{n} liste Steam'den de silindi",
+    steamPendingInfo: "{n} liste Steam'den silinmeyi bekliyor — Steam tamamen kapandığında uygulanır (pencereyi kapatmak yetmez, Steam tepside çalışmaya devam eder).", steamApplyNow: "Steam'i kapat ve uygula", steamApplyAsk: "Steam şu an açık. Silmeyi hemen uygulamak için Steam'i kapatıp yeniden açayım mı? Açık bir oyun ya da indirme varsa İptal de — Steam'i kendin kapattığında da uygulanır.", steamApplying: "Steam kapatılıyor, liste siliniyor…", steamApplied: "{n} liste Steam'den silindi, Steam yeniden açılıyor", steamBusy: "Steam kapanmadı (açık bir oyun ya da onay bekleyen bir pencere olabilir). Hiçbir şey değiştirilmedi.",
+    updStore: 'Arcadia Microsoft Store üzerinden güncellenir; yeni sürümler otomatik gelir.',
     searchPlaceholder: 'Oyun ara…', sortTitle: 'A → Z', sortRecent: 'Son eklenen', sortPlayed: 'Son oynanan',
     emptyTitle: 'Henüz oyun yok', emptyText: 'Bilgisayarındaki oyunları bulmak için taramayı başlat.', emptyScan: 'Oyunları Tara',
     allGames: 'Tüm Oyunlar', favorites: 'Favoriler', sourcesSection: 'Kaynaklar',
-    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_shortcut: 'Kısayollar', src_folder: 'Klasör', src_manual: 'Eklenenler',
+    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_gog: 'GOG', src_ea: 'EA', src_ubisoft: 'Ubisoft Connect', src_shortcut: 'Kısayollar', src_folder: 'Klasör', src_manual: 'Eklenenler',
     gamesCount: '{n} oyun', noGamesInView: 'Bu görünümde oyun yok.',
     scanning: 'Oyunlar taranıyor…', scanningSource: '{s} taranıyor…', foundGames: '{n} oyun bulundu', scanError: 'Tarama hatası: {e}',
     launch: 'Başlat', addFav: 'Favorilere ekle', removeFav: 'Favoriden çıkar', rename: 'Yeniden adlandır',
@@ -30,6 +40,29 @@ const I18N = {
     sgdbHint: 'Steam dışı oyunlara (Minecraft, FACEIT, LoL…) otomatik kapak getirir. Ücretsiz anahtar: steamgriddb.com → Preferences → API. Yapıştırıp yeniden tara.',
     startupTitle: 'Başlangıçta aç', startupQuestion: 'Arcadia, bilgisayar açıldığında otomatik başlasın mı?', startYes: 'Evet, başlat', startNo: 'Hayır',
     settingsStartup: 'Başlangıç', autostartLabel: 'Bilgisayar açılınca başlat', bgNotice: 'Arcadia arka planda çalışmaya devam ediyor',
+    accCancelled: '{s} bağlanmadı — giriş tamamlanmadan pencere kapandı.',
+    randomGame: 'Rastgele Oyun', randomTitle: 'Ne oynasam?', randomAnother: 'Bunu istemiyorum', randomEmpty: 'Seçilecek oyun yok.', randomPlay: 'Şimdi oyna',
+    librarySection: 'Kütüphane', filterNotInstalled: 'Kurulu değil',
+    connectAccounts: 'Hesap Bağla',
+    settingsAccounts: 'Bağlı Hesaplar', accConnect: 'Bağlan', accDisconnect: 'Çıkış yap',
+    accHint: 'Hesabını bağladığında kurulu olmayan oyunların da kütüphanende görünür. Giriş mağazanın kendi sayfasında yapılır; Arcadia şifreni görmez.',
+    accLinked: 'Bağlı: {n}', accSync: 'Kütüphaneyi Yenile', accSyncing: '{s} kütüphanesi alınıyor…',
+    accExpired: '{s} oturumu doldu, yeniden bağlan.', accFailed: '{s} alınamadı: {e}',
+    accConnected: '{s} bağlandı', accDisconnected: '{s} bağlantısı kesildi',
+    notInstalled: 'Kurulu değil', installGame: 'Kur', filterInstalled: 'Kurulu', filterOwned: 'Kütüphanem',
+    dlCancel: 'İptal', dlStalled: 'Başlatılamadı', dlStalledHint: 'Mağaza kurulumu başlatmadı — iptal edilmiş olabilir.', dlCancelledStore: 'Mağazanın indirme listesi açıldı, oradan durdurabilirsin.',
+    downloads: 'İndirmeler', dlEmpty: 'Şu anda indirilen oyun yok.', dlClear: 'Bitenleri temizle',
+    dlPending: 'Başlatılıyor…', dlDownloading: 'İndiriliyor', dlInstalling: 'Kuruluyor', dlDone: 'Kuruldu', dlError: 'Hata',
+    dlRemove: 'Listeden çıkar', dlOpenClient: 'Mağazada aç', dlStarted: '{t} indirmesi başlatıldı',
+    dlNoUrl: 'Bu oyun için kurulum bağlantısı yok.', dlFinished: '{t} kuruldu',
+    dlHandoff: 'İndirmeyi mağazanın kendi istemcisi yapar; Arcadia ilerlemeyi buradan gösterir.',
+    dlEta: 'kalan {t}', dlXboxNote: 'Microsoft Store ilerleme bilgisi vermiyor; yalnızca bitince görünür.',
+    openingStore: 'Mağaza açılıyor…',
+    settingsUpdates: 'Güncellemeler', autoUpdateLabel: 'Güncellemeleri otomatik kur',
+    autoUpdateHint: 'Açıkken Arcadia yeni sürümü arka planda indirir ve bir sonraki kapanışta kurar. Kapalıyken sadece haber verir.',
+    checkUpdate: 'Güncelleme Kontrol Et', updChecking: 'Kontrol ediliyor…', updLatest: 'En güncel sürümü kullanıyorsun.',
+    updAvailable: 'Yeni sürüm bulundu: {v}', updDownloading: 'İndiriliyor… %{p}', updDownloaded: '{v} indirildi — kurmaya hazır',
+    updInstall: 'Yeniden başlat ve kur', updError: 'Güncelleme hatası: {e}', updDev: 'Güncelleme yalnızca kurulu sürümde çalışır.',
     onbNext: 'İleri', onbDone: 'Başla', onbSkip: 'Geç',
     onbScanT: 'Oyunlarını tara', onbScanD: 'Steam, Epic, Xbox ve masaüstü oyunlarını otomatik bulur.',
     onbCardT: 'Tıkla ve oyna', onbCardD: 'Karta tıkla, oyun açılır. Sağ tık ile favori, kapak değiştir, birlikte aç ve daha fazlası.',
@@ -38,10 +71,16 @@ const I18N = {
   },
   en: {
     scan: 'Scan', addGame: 'Add Game', settings: 'Settings', by: 'by',
+    sortRating: 'By rating', metacriticLabel: 'Metacritic',
+    steamListsSection: 'Steam Lists', steamListsLabel: 'Show Steam collections', steamListsAskTitle: 'Steam collections found', steamListsAskText: 'Found {n} collections ({names}). Add them to the sidebar?', steamListsYes: 'Yes, add them', steamListsNo: 'No', steamListsNone: 'No Steam collections found.', steamListsRefresh: 'Refresh lists', steamListsHint: "Read from your Steam client's collections. Only manually added games come through — Steam's own rule-based (dynamic) matches don't.",
+    listsSection: 'Lists', listAddTo: 'Add to list', listNew: 'New list…', listNewPrompt: 'List name:', listRenamePrompt: 'New list name:', listDelete: 'Delete list', listDeleted: '{n} deleted', listAdded: '{t} → {n}', listRemoved: '{t} removed from {n}', listSteamLocked: "This game is in the list via Steam; Arcadia doesn't write to Steam.",
+    listDeleteSteamConfirm: "'{n}' is a Steam collection. It will be deleted in Steam too (on all your devices). Sure?", listDeletedSteam: '{n} deleted in Steam too', listDeletedSteamPending: '{n} deleted — Steam is running, so the Steam collection goes as soon as you close Steam.', listSteamApplied: '{n} list(s) deleted in Steam too',
+    steamPendingInfo: '{n} list(s) waiting to be deleted in Steam — applied once Steam is fully closed (closing its window is not enough; Steam keeps running in the tray).', steamApplyNow: 'Close Steam and apply', steamApplyAsk: 'Steam is running. Close and reopen it now to apply the deletion? Cancel if a game or download is running — it also applies whenever you quit Steam yourself.', steamApplying: 'Closing Steam and deleting the list…', steamApplied: '{n} list(s) deleted in Steam, reopening Steam', steamBusy: "Steam didn't close (a running game or a dialog waiting for you, perhaps). Nothing was changed.",
+    updStore: 'Arcadia updates through the Microsoft Store; new versions arrive automatically.',
     searchPlaceholder: 'Search games…', sortTitle: 'A → Z', sortRecent: 'Recently added', sortPlayed: 'Recently played',
     emptyTitle: 'No games yet', emptyText: 'Scan to find the games installed on your PC.', emptyScan: 'Scan for Games',
     allGames: 'All Games', favorites: 'Favorites', sourcesSection: 'Sources',
-    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_shortcut: 'Shortcuts', src_folder: 'Folder', src_manual: 'Added',
+    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_gog: 'GOG', src_ea: 'EA', src_ubisoft: 'Ubisoft Connect', src_shortcut: 'Shortcuts', src_folder: 'Folder', src_manual: 'Added',
     gamesCount: '{n} games', noGamesInView: 'No games in this view.',
     scanning: 'Scanning games…', scanningSource: 'Scanning {s}…', foundGames: '{n} games found', scanError: 'Scan error: {e}',
     launch: 'Launch', addFav: 'Add to favorites', removeFav: 'Remove from favorites', rename: 'Rename',
@@ -61,6 +100,29 @@ const I18N = {
     sgdbHint: 'Fetches covers for non-Steam games (Minecraft, FACEIT, LoL…). Free key: steamgriddb.com → Preferences → API. Paste it and rescan.',
     startupTitle: 'Launch at startup', startupQuestion: 'Should Arcadia start automatically when your PC turns on?', startYes: 'Yes, start it', startNo: 'No',
     settingsStartup: 'Startup', autostartLabel: 'Launch when PC starts', bgNotice: 'Arcadia keeps running in the background',
+    accCancelled: '{s} not connected — the window closed before sign-in finished.',
+    randomGame: 'Random Game', randomTitle: 'What should I play?', randomAnother: "I don't want this one", randomEmpty: 'No games to pick from.', randomPlay: 'Play now',
+    librarySection: 'Library', filterNotInstalled: 'Not installed',
+    connectAccounts: 'Link Account',
+    settingsAccounts: 'Linked Accounts', accConnect: 'Connect', accDisconnect: 'Sign out',
+    accHint: "Link an account and the games you own but haven't installed show up too. You sign in on the store's own page — Arcadia never sees your password.",
+    accLinked: 'Linked: {n}', accSync: 'Refresh Library', accSyncing: 'Fetching {s} library…',
+    accExpired: 'Your {s} session expired — link it again.', accFailed: "Couldn't fetch {s}: {e}",
+    accConnected: '{s} connected', accDisconnected: '{s} disconnected',
+    notInstalled: 'Not installed', installGame: 'Install', filterInstalled: 'Installed', filterOwned: 'My library',
+    dlCancel: 'Cancel', dlStalled: "Didn't start", dlStalledHint: "The store never began installing — it may have been cancelled.", dlCancelledStore: "Opened the store's download list so you can stop it there.",
+    downloads: 'Downloads', dlEmpty: 'No games are downloading right now.', dlClear: 'Clear finished',
+    dlPending: 'Starting…', dlDownloading: 'Downloading', dlInstalling: 'Installing', dlDone: 'Installed', dlError: 'Error',
+    dlRemove: 'Remove from list', dlOpenClient: 'Open in store', dlStarted: 'Started downloading {t}',
+    dlNoUrl: 'No install link for this game.', dlFinished: '{t} installed',
+    dlHandoff: "The store's own client does the downloading; Arcadia shows the progress here.",
+    dlEta: '{t} left', dlXboxNote: 'The Microsoft Store reports no progress — it only shows up once finished.',
+    openingStore: 'Opening store…',
+    settingsUpdates: 'Updates', autoUpdateLabel: 'Install updates automatically',
+    autoUpdateHint: 'When on, Arcadia downloads a new version in the background and installs it the next time it closes. When off, it only tells you.',
+    checkUpdate: 'Check for Updates', updChecking: 'Checking…', updLatest: "You're on the latest version.",
+    updAvailable: 'New version found: {v}', updDownloading: 'Downloading… {p}%', updDownloaded: '{v} downloaded — ready to install',
+    updInstall: 'Restart and install', updError: 'Update error: {e}', updDev: 'Updates only work in an installed build.',
     onbNext: 'Next', onbDone: 'Get started', onbSkip: 'Skip',
     onbScanT: 'Scan your games', onbScanD: 'Automatically finds your Steam, Epic, Xbox and desktop games.',
     onbCardT: 'Click to play', onbCardD: 'Click a card to launch. Right-click for favorite, change cover, launch together and more.',
@@ -69,10 +131,16 @@ const I18N = {
   },
   de: {
     scan: 'Scannen', addGame: 'Spiel hinzufügen', settings: 'Einstellungen', by: 'von',
+    sortRating: 'Nach Bewertung', metacriticLabel: 'Metacritic',
+    steamListsSection: 'Steam-Listen', steamListsLabel: 'Steam-Sammlungen anzeigen', steamListsAskTitle: 'Steam-Sammlungen gefunden', steamListsAskText: '{n} Sammlungen gefunden ({names}). In die Seitenleiste aufnehmen?', steamListsYes: 'Ja, hinzufügen', steamListsNo: 'Nein', steamListsNone: 'Keine Steam-Sammlungen gefunden.', steamListsRefresh: 'Listen aktualisieren', steamListsHint: 'Wird aus den Sammlungen deines Steam-Clients gelesen. Nur manuell hinzugefügte Spiele erscheinen, keine dynamischen Regeltreffer.',
+    listsSection: 'Listen', listAddTo: 'Zur Liste hinzufügen', listNew: 'Neue Liste…', listNewPrompt: 'Listenname:', listRenamePrompt: 'Neuer Listenname:', listDelete: 'Liste löschen', listDeleted: '{n} gelöscht', listAdded: '{t} → {n}', listRemoved: '{t} aus {n} entfernt', listSteamLocked: 'Dieses Spiel kommt über Steam in die Liste; Arcadia schreibt nicht nach Steam.',
+    listDeleteSteamConfirm: "'{n}' ist eine Steam-Sammlung. Sie wird auch in Steam gelöscht (auf allen Geräten). Sicher?", listDeletedSteam: '{n} auch in Steam gelöscht', listDeletedSteamPending: '{n} gelöscht — Steam läuft, die Steam-Sammlung wird gelöscht, sobald du Steam schließt.', listSteamApplied: '{n} Liste(n) auch in Steam gelöscht',
+    steamPendingInfo: '{n} Liste(n) warten auf Löschung in Steam — wird angewendet, sobald Steam ganz geschlossen ist (Fenster schließen reicht nicht, Steam läuft im Tray weiter).', steamApplyNow: 'Steam schließen und anwenden', steamApplyAsk: 'Steam läuft. Jetzt schließen und neu starten, um die Löschung anzuwenden? Abbrechen, falls ein Spiel oder Download läuft — es wird auch angewendet, wenn du Steam selbst beendest.', steamApplying: 'Steam wird geschlossen, Liste wird gelöscht…', steamApplied: '{n} Liste(n) in Steam gelöscht, Steam startet neu', steamBusy: 'Steam wurde nicht geschlossen (laufendes Spiel oder offener Dialog?). Nichts wurde geändert.',
+    updStore: 'Arcadia wird über den Microsoft Store aktualisiert; neue Versionen kommen automatisch.',
     searchPlaceholder: 'Spiele suchen…', sortTitle: 'A → Z', sortRecent: 'Zuletzt hinzugefügt', sortPlayed: 'Zuletzt gespielt',
     emptyTitle: 'Noch keine Spiele', emptyText: 'Starte den Scan, um installierte Spiele zu finden.', emptyScan: 'Spiele scannen',
     allGames: 'Alle Spiele', favorites: 'Favoriten', sourcesSection: 'Quellen',
-    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_shortcut: 'Verknüpfungen', src_folder: 'Ordner', src_manual: 'Hinzugefügt',
+    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_gog: 'GOG', src_ea: 'EA', src_ubisoft: 'Ubisoft Connect', src_shortcut: 'Verknüpfungen', src_folder: 'Ordner', src_manual: 'Hinzugefügt',
     gamesCount: '{n} Spiele', noGamesInView: 'Keine Spiele in dieser Ansicht.',
     scanning: 'Spiele werden gescannt…', scanningSource: '{s} wird gescannt…', foundGames: '{n} Spiele gefunden', scanError: 'Scan-Fehler: {e}',
     launch: 'Starten', addFav: 'Zu Favoriten', removeFav: 'Aus Favoriten entfernen', rename: 'Umbenennen',
@@ -92,6 +160,29 @@ const I18N = {
     sgdbHint: 'Holt Cover für Nicht-Steam-Spiele (Minecraft, FACEIT, LoL…). Kostenloser Schlüssel: steamgriddb.com → Preferences → API. Einfügen und neu scannen.',
     startupTitle: 'Beim Start öffnen', startupQuestion: 'Soll Arcadia automatisch starten, wenn der PC hochfährt?', startYes: 'Ja, starten', startNo: 'Nein',
     settingsStartup: 'Autostart', autostartLabel: 'Beim Hochfahren starten', bgNotice: 'Arcadia läuft im Hintergrund weiter',
+    accCancelled: '{s} nicht verbunden — das Fenster wurde vor dem Login geschlossen.',
+    randomGame: 'Zufallsspiel', randomTitle: 'Was soll ich spielen?', randomAnother: 'Das will ich nicht', randomEmpty: 'Keine Spiele zur Auswahl.', randomPlay: 'Jetzt spielen',
+    librarySection: 'Bibliothek', filterNotInstalled: 'Nicht installiert',
+    connectAccounts: 'Konto verknüpfen',
+    settingsAccounts: 'Verknüpfte Konten', accConnect: 'Verbinden', accDisconnect: 'Abmelden',
+    accHint: 'Mit einem verknüpften Konto erscheinen auch Spiele, die du besitzt, aber nicht installiert hast. Die Anmeldung läuft auf der Seite des Shops — Arcadia sieht dein Passwort nie.',
+    accLinked: 'Verknüpft: {n}', accSync: 'Bibliothek aktualisieren', accSyncing: '{s}-Bibliothek wird geladen…',
+    accExpired: 'Deine {s}-Sitzung ist abgelaufen — bitte neu verbinden.', accFailed: '{s} konnte nicht geladen werden: {e}',
+    accConnected: '{s} verbunden', accDisconnected: '{s} getrennt',
+    notInstalled: 'Nicht installiert', installGame: 'Installieren', filterInstalled: 'Installiert', filterOwned: 'Meine Bibliothek',
+    dlCancel: 'Abbrechen', dlStalled: 'Nicht gestartet', dlStalledHint: 'Der Store hat die Installation nie begonnen — vielleicht abgebrochen.', dlCancelledStore: 'Die Download-Liste des Stores wurde geöffnet.',
+    downloads: 'Downloads', dlEmpty: 'Derzeit wird kein Spiel geladen.', dlClear: 'Fertige entfernen',
+    dlPending: 'Wird gestartet…', dlDownloading: 'Wird geladen', dlInstalling: 'Wird installiert', dlDone: 'Installiert', dlError: 'Fehler',
+    dlRemove: 'Aus der Liste entfernen', dlOpenClient: 'Im Store öffnen', dlStarted: 'Download von {t} gestartet',
+    dlNoUrl: 'Für dieses Spiel gibt es keinen Installationslink.', dlFinished: '{t} installiert',
+    dlHandoff: 'Der Store-Client lädt herunter; Arcadia zeigt den Fortschritt hier an.',
+    dlEta: 'noch {t}', dlXboxNote: 'Der Microsoft Store meldet keinen Fortschritt — es erscheint erst nach Abschluss.',
+    openingStore: 'Shop wird geöffnet…',
+    settingsUpdates: 'Updates', autoUpdateLabel: 'Updates automatisch installieren',
+    autoUpdateHint: 'Wenn aktiv, lädt Arcadia neue Versionen im Hintergrund und installiert sie beim nächsten Beenden. Sonst wirst du nur benachrichtigt.',
+    checkUpdate: 'Nach Updates suchen', updChecking: 'Wird geprüft…', updLatest: 'Du hast die neueste Version.',
+    updAvailable: 'Neue Version gefunden: {v}', updDownloading: 'Wird geladen… {p}%', updDownloaded: '{v} geladen — bereit zur Installation',
+    updInstall: 'Neu starten und installieren', updError: 'Update-Fehler: {e}', updDev: 'Updates funktionieren nur in einer installierten Version.',
     onbNext: 'Weiter', onbDone: "Los geht's", onbSkip: 'Überspringen',
     onbScanT: 'Spiele scannen', onbScanD: 'Findet automatisch deine Steam-, Epic-, Xbox- und Desktop-Spiele.',
     onbCardT: 'Klicken zum Spielen', onbCardD: 'Karte anklicken zum Starten. Rechtsklick für Favorit, Cover ändern, zusammen starten und mehr.',
@@ -100,10 +191,16 @@ const I18N = {
   },
   ja: {
     scan: 'スキャン', addGame: 'ゲームを追加', settings: '設定', by: '制作',
+    sortRating: '評価順', metacriticLabel: 'Metacritic',
+    steamListsSection: 'Steamリスト', steamListsLabel: 'Steamコレクションを表示', steamListsAskTitle: 'Steamコレクションが見つかりました', steamListsAskText: '{n} 件のコレクション ({names}) が見つかりました。サイドバーに追加しますか？', steamListsYes: 'はい、追加', steamListsNo: 'いいえ', steamListsNone: 'Steamコレクションが見つかりません。', steamListsRefresh: 'リストを更新', steamListsHint: 'Steamクライアントのコレクションから読み取ります。手動で追加したゲームのみで、動的ルールの一致は含まれません。',
+    listsSection: 'リスト', listAddTo: 'リストに追加', listNew: '新しいリスト…', listNewPrompt: 'リスト名:', listRenamePrompt: '新しいリスト名:', listDelete: 'リストを削除', listDeleted: '{n} を削除しました', listAdded: '{t} → {n}', listRemoved: '{t} を {n} から削除しました', listSteamLocked: 'このゲームはSteam経由でリストに入っています。ArcadiaはSteamに書き込みません。',
+    listDeleteSteamConfirm: "「{n}」はSteamのコレクションです。Steamからも（すべての端末で）削除されます。よろしいですか？", listDeletedSteam: '{n} をSteamからも削除しました', listDeletedSteamPending: '{n} を削除しました — Steamが起動中のため、Steamを閉じるとSteam側も削除されます。', listSteamApplied: '{n} 件のリストをSteamからも削除しました',
+    steamPendingInfo: '{n} 件のリストがSteamでの削除待ちです — Steamが完全に終了すると適用されます（ウィンドウを閉じるだけでは不十分、Steamはトレイで動作し続けます）。', steamApplyNow: 'Steamを閉じて適用', steamApplyAsk: 'Steamが起動中です。今すぐ閉じて再起動し、削除を適用しますか？ゲームやダウンロード中ならキャンセルしてください — 自分でSteamを終了したときにも適用されます。', steamApplying: 'Steamを閉じてリストを削除しています…', steamApplied: '{n} 件のリストをSteamから削除し、Steamを再起動します', steamBusy: 'Steamが終了しませんでした（ゲーム実行中か確認ダイアログ待ち？）。何も変更していません。',
+    updStore: 'ArcadiaはMicrosoft Storeで更新されます。新しいバージョンは自動で届きます。',
     searchPlaceholder: 'ゲームを検索…', sortTitle: 'A → Z', sortRecent: '最近追加', sortPlayed: '最近プレイ',
     emptyTitle: 'まだゲームがありません', emptyText: 'PCにインストールされたゲームをスキャンして見つけましょう。', emptyScan: 'ゲームをスキャン',
     allGames: 'すべてのゲーム', favorites: 'お気に入り', sourcesSection: 'ソース',
-    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_shortcut: 'ショートカット', src_folder: 'フォルダー', src_manual: '追加済み',
+    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_gog: 'GOG', src_ea: 'EA', src_ubisoft: 'Ubisoft Connect', src_shortcut: 'ショートカット', src_folder: 'フォルダー', src_manual: '追加済み',
     gamesCount: '{n} 本', noGamesInView: 'この表示にゲームはありません。',
     scanning: 'ゲームをスキャン中…', scanningSource: '{s} をスキャン中…', foundGames: '{n} 本のゲームが見つかりました', scanError: 'スキャンエラー: {e}',
     launch: '起動', addFav: 'お気に入りに追加', removeFav: 'お気に入りから削除', rename: '名前を変更',
@@ -123,6 +220,29 @@ const I18N = {
     sgdbHint: 'Steam以外のゲーム（Minecraft、FACEIT、LoL…）にカバーを取得します。無料キー: steamgriddb.com → Preferences → API。貼り付けて再スキャン。',
     startupTitle: '起動時に開く', startupQuestion: 'PCの起動時にArcadiaを自動的に起動しますか？', startYes: 'はい', startNo: 'いいえ',
     settingsStartup: '起動', autostartLabel: 'PC起動時に起動', bgNotice: 'Arcadiaはバックグラウンドで動作し続けます',
+    accCancelled: '{s} は連携されませんでした — サインイン前にウィンドウが閉じられました。',
+    randomGame: 'ランダム', randomTitle: '何をプレイする？', randomAnother: 'これはいらない', randomEmpty: '選べるゲームがありません。', randomPlay: '今すぐプレイ',
+    librarySection: 'ライブラリ', filterNotInstalled: '未インストール',
+    connectAccounts: 'アカウント連携',
+    settingsAccounts: '連携アカウント', accConnect: '連携する', accDisconnect: 'ログアウト',
+    accHint: 'アカウントを連携すると、未インストールの所有ゲームもライブラリに表示されます。ログインはストア自身のページで行われ、Arcadiaがパスワードを見ることはありません。',
+    accLinked: '連携中: {n}', accSync: 'ライブラリを更新', accSyncing: '{s} のライブラリを取得中…',
+    accExpired: '{s} のセッションが期限切れです。再連携してください。', accFailed: '{s} を取得できませんでした: {e}',
+    accConnected: '{s} を連携しました', accDisconnected: '{s} の連携を解除しました',
+    notInstalled: '未インストール', installGame: 'インストール', filterInstalled: 'インストール済み', filterOwned: 'マイライブラリ',
+    dlCancel: 'キャンセル', dlStalled: '開始されませんでした', dlStalledHint: 'ストアがインストールを開始しませんでした。キャンセルされた可能性があります。', dlCancelledStore: 'ストアのダウンロード一覧を開きました。',
+    downloads: 'ダウンロード', dlEmpty: '現在ダウンロード中のゲームはありません。', dlClear: '完了分を消去',
+    dlPending: '開始しています…', dlDownloading: 'ダウンロード中', dlInstalling: 'インストール中', dlDone: 'インストール済み', dlError: 'エラー',
+    dlRemove: 'リストから削除', dlOpenClient: 'ストアで開く', dlStarted: '{t} のダウンロードを開始しました',
+    dlNoUrl: 'このゲームにはインストールリンクがありません。', dlFinished: '{t} をインストールしました',
+    dlHandoff: 'ダウンロードはストア自身のクライアントが行い、Arcadiaは進捗をここに表示します。',
+    dlEta: '残り {t}', dlXboxNote: 'Microsoft Storeは進捗を通知しません。完了後に表示されます。',
+    openingStore: 'ストアを開いています…',
+    settingsUpdates: 'アップデート', autoUpdateLabel: 'アップデートを自動でインストール',
+    autoUpdateHint: 'オンにすると、新しいバージョンをバックグラウンドでダウンロードし、次回終了時にインストールします。オフの場合は通知のみです。',
+    checkUpdate: 'アップデートを確認', updChecking: '確認中…', updLatest: '最新バージョンです。',
+    updAvailable: '新しいバージョン: {v}', updDownloading: 'ダウンロード中… {p}%', updDownloaded: '{v} をダウンロード済み — インストール可能',
+    updInstall: '再起動してインストール', updError: 'アップデートエラー: {e}', updDev: 'アップデートはインストール版でのみ動作します。',
     onbNext: '次へ', onbDone: '始める', onbSkip: 'スキップ',
     onbScanT: 'ゲームをスキャン', onbScanD: 'Steam、Epic、Xbox、デスクトップのゲームを自動的に見つけます。',
     onbCardT: 'クリックして起動', onbCardD: 'カードをクリックして起動。右クリックでお気に入り、カバー変更、一緒に起動など。',
@@ -131,10 +251,16 @@ const I18N = {
   },
   ko: {
     scan: '스캔', addGame: '게임 추가', settings: '설정', by: '제작',
+    sortRating: '평점순', metacriticLabel: 'Metacritic',
+    steamListsSection: 'Steam 목록', steamListsLabel: 'Steam 컬렉션 표시', steamListsAskTitle: 'Steam 컬렉션을 찾았습니다', steamListsAskText: '컬렉션 {n}개를 찾았습니다 ({names}). 사이드바에 추가할까요?', steamListsYes: '예, 추가', steamListsNo: '아니요', steamListsNone: 'Steam 컬렉션이 없습니다.', steamListsRefresh: '목록 새로고침', steamListsHint: 'Steam 클라이언트의 컬렉션에서 읽습니다. 수동으로 추가한 게임만 표시되며 동적 규칙 일치는 포함되지 않습니다.',
+    listsSection: '목록', listAddTo: '목록에 추가', listNew: '새 목록…', listNewPrompt: '목록 이름:', listRenamePrompt: '새 목록 이름:', listDelete: '목록 삭제', listDeleted: '{n} 삭제됨', listAdded: '{t} → {n}', listRemoved: '{t}을(를) {n}에서 제거함', listSteamLocked: '이 게임은 Steam을 통해 목록에 있습니다. Arcadia는 Steam에 쓰지 않습니다.',
+    listDeleteSteamConfirm: "'{n}'은(는) Steam 컬렉션입니다. Steam에서도(모든 기기) 삭제됩니다. 계속할까요?", listDeletedSteam: '{n}을(를) Steam에서도 삭제했습니다', listDeletedSteamPending: '{n} 삭제됨 — Steam이 실행 중이라 Steam을 닫으면 Steam 컬렉션도 삭제됩니다.', listSteamApplied: '목록 {n}개를 Steam에서도 삭제했습니다',
+    steamPendingInfo: '목록 {n}개가 Steam 삭제를 기다리는 중 — Steam이 완전히 종료되면 적용됩니다(창을 닫는 것만으로는 부족, Steam은 트레이에서 계속 실행됨).', steamApplyNow: 'Steam 종료 후 적용', steamApplyAsk: 'Steam이 실행 중입니다. 지금 종료하고 다시 열어 삭제를 적용할까요? 게임이나 다운로드 중이면 취소하세요 — 직접 Steam을 종료할 때도 적용됩니다.', steamApplying: 'Steam을 종료하고 목록을 삭제하는 중…', steamApplied: 'Steam에서 목록 {n}개 삭제, Steam 다시 여는 중', steamBusy: 'Steam이 종료되지 않았습니다(실행 중인 게임이나 확인 창?). 아무것도 바뀌지 않았습니다.',
+    updStore: 'Arcadia는 Microsoft Store를 통해 업데이트되며 새 버전이 자동으로 설치됩니다.',
     searchPlaceholder: '게임 검색…', sortTitle: 'A → Z', sortRecent: '최근 추가', sortPlayed: '최근 플레이',
     emptyTitle: '아직 게임이 없습니다', emptyText: 'PC에 설치된 게임을 스캔하여 찾아보세요.', emptyScan: '게임 스캔',
     allGames: '모든 게임', favorites: '즐겨찾기', sourcesSection: '소스',
-    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_shortcut: '바로가기', src_folder: '폴더', src_manual: '추가됨',
+    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_gog: 'GOG', src_ea: 'EA', src_ubisoft: 'Ubisoft Connect', src_shortcut: '바로가기', src_folder: '폴더', src_manual: '추가됨',
     gamesCount: '게임 {n}개', noGamesInView: '이 보기에 게임이 없습니다.',
     scanning: '게임 스캔 중…', scanningSource: '{s} 스캔 중…', foundGames: '게임 {n}개를 찾았습니다', scanError: '스캔 오류: {e}',
     launch: '실행', addFav: '즐겨찾기에 추가', removeFav: '즐겨찾기에서 제거', rename: '이름 바꾸기',
@@ -154,6 +280,29 @@ const I18N = {
     sgdbHint: 'Steam이 아닌 게임(Minecraft, FACEIT, LoL…)의 커버를 가져옵니다. 무료 키: steamgriddb.com → Preferences → API. 붙여넣고 다시 스캔하세요.',
     startupTitle: '시작 시 실행', startupQuestion: 'PC를 켤 때 Arcadia를 자동으로 시작할까요?', startYes: '예', startNo: '아니요',
     settingsStartup: '시작', autostartLabel: 'PC 시작 시 실행', bgNotice: 'Arcadia가 백그라운드에서 계속 실행됩니다',
+    accCancelled: '{s} 연결되지 않음 — 로그인 전에 창이 닫혔습니다.',
+    randomGame: '랜덤 게임', randomTitle: '뭘 할까?', randomAnother: '이건 싫어', randomEmpty: '고를 게임이 없습니다.', randomPlay: '지금 플레이',
+    librarySection: '라이브러리', filterNotInstalled: '미설치',
+    connectAccounts: '계정 연결',
+    settingsAccounts: '연결된 계정', accConnect: '연결', accDisconnect: '로그아웃',
+    accHint: '계정을 연결하면 설치하지 않은 보유 게임도 라이브러리에 표시됩니다. 로그인은 스토어 자체 페이지에서 이루어지며 Arcadia는 비밀번호를 볼 수 없습니다.',
+    accLinked: '연결됨: {n}', accSync: '라이브러리 새로고침', accSyncing: '{s} 라이브러리 가져오는 중…',
+    accExpired: '{s} 세션이 만료되었습니다. 다시 연결하세요.', accFailed: '{s}을(를) 가져오지 못했습니다: {e}',
+    accConnected: '{s} 연결됨', accDisconnected: '{s} 연결 해제됨',
+    notInstalled: '미설치', installGame: '설치', filterInstalled: '설치됨', filterOwned: '내 라이브러리',
+    dlCancel: '취소', dlStalled: '시작되지 않음', dlStalledHint: '스토어가 설치를 시작하지 않았습니다. 취소되었을 수 있습니다.', dlCancelledStore: '스토어의 다운로드 목록을 열었습니다.',
+    downloads: '다운로드', dlEmpty: '지금 다운로드 중인 게임이 없습니다.', dlClear: '완료된 항목 지우기',
+    dlPending: '시작하는 중…', dlDownloading: '다운로드 중', dlInstalling: '설치 중', dlDone: '설치됨', dlError: '오류',
+    dlRemove: '목록에서 제거', dlOpenClient: '스토어에서 열기', dlStarted: '{t} 다운로드를 시작했습니다',
+    dlNoUrl: '이 게임에는 설치 링크가 없습니다.', dlFinished: '{t} 설치 완료',
+    dlHandoff: '다운로드는 스토어 자체 클라이언트가 수행하며 Arcadia는 진행 상황만 표시합니다.',
+    dlEta: '{t} 남음', dlXboxNote: 'Microsoft Store는 진행률을 알려주지 않아 완료 후에만 표시됩니다.',
+    openingStore: '스토어를 여는 중…',
+    settingsUpdates: '업데이트', autoUpdateLabel: '업데이트 자동 설치',
+    autoUpdateHint: '켜면 새 버전을 백그라운드에서 내려받아 다음 종료 시 설치합니다. 끄면 알림만 표시합니다.',
+    checkUpdate: '업데이트 확인', updChecking: '확인 중…', updLatest: '최신 버전입니다.',
+    updAvailable: '새 버전 발견: {v}', updDownloading: '다운로드 중… {p}%', updDownloaded: '{v} 다운로드 완료 — 설치 준비됨',
+    updInstall: '다시 시작하고 설치', updError: '업데이트 오류: {e}', updDev: '업데이트는 설치된 버전에서만 작동합니다.',
     onbNext: '다음', onbDone: '시작하기', onbSkip: '건너뛰기',
     onbScanT: '게임 스캔', onbScanD: 'Steam, Epic, Xbox 및 바탕화면 게임을 자동으로 찾습니다.',
     onbCardT: '클릭하여 실행', onbCardD: '카드를 클릭하여 실행. 마우스 오른쪽 클릭으로 즐겨찾기, 커버 변경, 함께 실행 등.',
@@ -162,10 +311,16 @@ const I18N = {
   },
   es: {
     scan: 'Escanear', addGame: 'Añadir juego', settings: 'Ajustes', by: 'por',
+    sortRating: 'Por valoración', metacriticLabel: 'Metacritic',
+    steamListsSection: 'Listas de Steam', steamListsLabel: 'Mostrar colecciones de Steam', steamListsAskTitle: 'Colecciones de Steam encontradas', steamListsAskText: 'Se encontraron {n} colecciones ({names}). ¿Añadirlas a la barra lateral?', steamListsYes: 'Sí, añadir', steamListsNo: 'No', steamListsNone: 'No se encontraron colecciones de Steam.', steamListsRefresh: 'Actualizar listas', steamListsHint: 'Se leen de las colecciones de tu cliente de Steam. Solo aparecen los juegos añadidos manualmente, no las coincidencias dinámicas por reglas.',
+    listsSection: 'Listas', listAddTo: 'Añadir a lista', listNew: 'Nueva lista…', listNewPrompt: 'Nombre de la lista:', listRenamePrompt: 'Nuevo nombre:', listDelete: 'Eliminar lista', listDeleted: '{n} eliminada', listAdded: '{t} → {n}', listRemoved: '{t} quitado de {n}', listSteamLocked: 'Este juego está en la lista vía Steam; Arcadia no escribe en Steam.',
+    listDeleteSteamConfirm: "'{n}' es una colección de Steam. También se eliminará en Steam (en todos tus dispositivos). ¿Seguro?", listDeletedSteam: '{n} eliminada también en Steam', listDeletedSteamPending: '{n} eliminada — Steam está abierto; la colección se eliminará en Steam al cerrarlo.', listSteamApplied: '{n} lista(s) eliminada(s) también en Steam',
+    steamPendingInfo: '{n} lista(s) esperando eliminarse en Steam — se aplica cuando Steam se cierre del todo (cerrar la ventana no basta, Steam sigue en la bandeja).', steamApplyNow: 'Cerrar Steam y aplicar', steamApplyAsk: 'Steam está abierto. ¿Cerrarlo y reabrirlo ahora para aplicar la eliminación? Cancela si hay un juego o descarga en curso — también se aplica cuando cierres Steam tú.', steamApplying: 'Cerrando Steam y eliminando la lista…', steamApplied: '{n} lista(s) eliminada(s) en Steam, reabriendo Steam', steamBusy: 'Steam no se cerró (¿un juego abierto o un diálogo esperando?). No se cambió nada.',
+    updStore: 'Arcadia se actualiza desde Microsoft Store; las nuevas versiones llegan solas.',
     searchPlaceholder: 'Buscar juegos…', sortTitle: 'A → Z', sortRecent: 'Añadido reciente', sortPlayed: 'Jugado reciente',
     emptyTitle: 'Aún no hay juegos', emptyText: 'Escanea para encontrar los juegos instalados en tu PC.', emptyScan: 'Escanear juegos',
     allGames: 'Todos los juegos', favorites: 'Favoritos', sourcesSection: 'Fuentes',
-    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_shortcut: 'Accesos directos', src_folder: 'Carpeta', src_manual: 'Añadidos',
+    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_gog: 'GOG', src_ea: 'EA', src_ubisoft: 'Ubisoft Connect', src_shortcut: 'Accesos directos', src_folder: 'Carpeta', src_manual: 'Añadidos',
     gamesCount: '{n} juegos', noGamesInView: 'No hay juegos en esta vista.',
     scanning: 'Escaneando juegos…', scanningSource: 'Escaneando {s}…', foundGames: '{n} juegos encontrados', scanError: 'Error de escaneo: {e}',
     launch: 'Iniciar', addFav: 'Añadir a favoritos', removeFav: 'Quitar de favoritos', rename: 'Renombrar',
@@ -185,6 +340,29 @@ const I18N = {
     sgdbHint: 'Obtiene carátulas para juegos que no son de Steam (Minecraft, FACEIT, LoL…). Clave gratis: steamgriddb.com → Preferences → API. Pégala y vuelve a escanear.',
     startupTitle: 'Abrir al iniciar', startupQuestion: '¿Quieres que Arcadia se inicie automáticamente al encender el PC?', startYes: 'Sí', startNo: 'No',
     settingsStartup: 'Inicio', autostartLabel: 'Iniciar al encender el PC', bgNotice: 'Arcadia sigue ejecutándose en segundo plano',
+    accCancelled: '{s} no se vinculó: la ventana se cerró antes de iniciar sesión.',
+    randomGame: 'Juego al azar', randomTitle: '¿A qué juego?', randomAnother: 'Este no me gusta', randomEmpty: 'No hay juegos para elegir.', randomPlay: 'Jugar ahora',
+    librarySection: 'Biblioteca', filterNotInstalled: 'No instalados',
+    connectAccounts: 'Vincular cuenta',
+    settingsAccounts: 'Cuentas vinculadas', accConnect: 'Conectar', accDisconnect: 'Cerrar sesión',
+    accHint: 'Al vincular una cuenta también aparecen los juegos que tienes pero no has instalado. El inicio de sesión ocurre en la página de la tienda; Arcadia nunca ve tu contraseña.',
+    accLinked: 'Vinculada: {n}', accSync: 'Actualizar biblioteca', accSyncing: 'Obteniendo la biblioteca de {s}…',
+    accExpired: 'Tu sesión de {s} caducó: vuelve a vincularla.', accFailed: 'No se pudo obtener {s}: {e}',
+    accConnected: '{s} conectada', accDisconnected: '{s} desconectada',
+    notInstalled: 'No instalado', installGame: 'Instalar', filterInstalled: 'Instalados', filterOwned: 'Mi biblioteca',
+    dlCancel: 'Cancelar', dlStalled: 'No se inició', dlStalledHint: 'La tienda nunca empezó a instalar; puede que se cancelara.', dlCancelledStore: 'Se abrió la lista de descargas de la tienda.',
+    downloads: 'Descargas', dlEmpty: 'Ahora mismo no se está descargando ningún juego.', dlClear: 'Limpiar terminadas',
+    dlPending: 'Iniciando…', dlDownloading: 'Descargando', dlInstalling: 'Instalando', dlDone: 'Instalado', dlError: 'Error',
+    dlRemove: 'Quitar de la lista', dlOpenClient: 'Abrir en la tienda', dlStarted: 'Descarga de {t} iniciada',
+    dlNoUrl: 'No hay enlace de instalación para este juego.', dlFinished: '{t} instalado',
+    dlHandoff: 'La descarga la hace el cliente de la tienda; Arcadia muestra el progreso aquí.',
+    dlEta: 'quedan {t}', dlXboxNote: 'Microsoft Store no informa del progreso: solo aparece al terminar.',
+    openingStore: 'Abriendo la tienda…',
+    settingsUpdates: 'Actualizaciones', autoUpdateLabel: 'Instalar actualizaciones automáticamente',
+    autoUpdateHint: 'Si está activo, Arcadia descarga la nueva versión en segundo plano y la instala al cerrarse. Si no, solo te avisa.',
+    checkUpdate: 'Buscar actualizaciones', updChecking: 'Comprobando…', updLatest: 'Tienes la última versión.',
+    updAvailable: 'Nueva versión encontrada: {v}', updDownloading: 'Descargando… {p}%', updDownloaded: '{v} descargada — lista para instalar',
+    updInstall: 'Reiniciar e instalar', updError: 'Error de actualización: {e}', updDev: 'Las actualizaciones solo funcionan en una versión instalada.',
     onbNext: 'Siguiente', onbDone: 'Empezar', onbSkip: 'Omitir',
     onbScanT: 'Escanea tus juegos', onbScanD: 'Encuentra automáticamente tus juegos de Steam, Epic, Xbox y escritorio.',
     onbCardT: 'Haz clic para jugar', onbCardD: 'Haz clic en una tarjeta para iniciar. Clic derecho para favoritos, cambiar carátula, abrir junto y más.',
@@ -218,8 +396,11 @@ const ICONS = {
   grid: L('<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>'),
   star: L('<path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.15 1 5.85L12 17.1 6.75 19.6l1-5.85L3.5 9.7l5.9-.9z"/>'),
   starFill: F('<path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.15 1 5.85L12 17.1 6.75 19.6l1-5.85L3.5 9.7l5.9-.9z"/>'),
+  // Store/brand marks are Simple Icons paths (simpleicons.org, CC0), used as-is
+  // on a 24x24 viewBox. Take new ones from there rather than drawing them —
+  // hand-made approximations of real logos read as wrong at a glance.
   steam: F('<path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273-.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.253 0-2.265-1.014-2.265-2.265z"/>'),
-  epic: F('<path d="M6.9 4.4h10.2v2.8h-7.1v2.3h6.3v2.8h-6.3v2.5h7.1v2.8H6.9z"/>'),
+  epic: F('<path d="M3.537 0C2.165 0 1.66.506 1.66 1.879V18.44a4.262 4.262 0 00.02.433c.031.3.037.59.316.92.027.033.311.245.311.245.153.075.258.13.43.2l8.335 3.491c.433.199.614.276.928.27h.002c.314.006.495-.071.928-.27l8.335-3.492c.172-.07.277-.124.43-.2 0 0 .284-.211.311-.243.28-.33.285-.621.316-.92a4.261 4.261 0 00.02-.434V1.879c0-1.373-.506-1.88-1.878-1.88zm13.366 3.11h.68c1.138 0 1.688.553 1.688 1.696v1.88h-1.374v-1.8c0-.369-.17-.54-.523-.54h-.235c-.367 0-.537.17-.537.539v5.81c0 .369.17.54.537.54h.262c.353 0 .523-.171.523-.54V8.619h1.373v2.143c0 1.144-.562 1.71-1.7 1.71h-.694c-1.138 0-1.7-.566-1.7-1.71V4.82c0-1.144.562-1.709 1.7-1.709zm-12.186.08h3.114v1.274H6.117v2.603h1.648v1.275H6.117v2.774h1.74v1.275h-3.14zm3.816 0h2.198c1.138 0 1.7.564 1.7 1.708v2.445c0 1.144-.562 1.71-1.7 1.71h-.799v3.338h-1.4zm4.53 0h1.4v9.201h-1.4zm-3.13 1.235v3.392h.575c.354 0 .523-.171.523-.54V4.965c0-.368-.17-.54-.523-.54zm-3.74 10.147a1.708 1.708 0 01.591.108 1.745 1.745 0 01.49.299l-.452.546a1.247 1.247 0 00-.308-.195.91.91 0 00-.363-.068.658.658 0 00-.28.06.703.703 0 00-.224.163.783.783 0 00-.151.243.799.799 0 00-.056.299v.008a.852.852 0 00.056.31.7.7 0 00.157.245.736.736 0 00.238.16.774.774 0 00.303.058.79.79 0 00.445-.116v-.339h-.548v-.565H7.37v1.255a2.019 2.019 0 01-.524.307 1.789 1.789 0 01-.683.123 1.642 1.642 0 01-.602-.107 1.46 1.46 0 01-.478-.3 1.371 1.371 0 01-.318-.455 1.438 1.438 0 01-.115-.58v-.008a1.426 1.426 0 01.113-.57 1.449 1.449 0 01.312-.46 1.418 1.418 0 01.474-.309 1.58 1.58 0 01.598-.111 1.708 1.708 0 01.045 0zm11.963.008a2.006 2.006 0 01.612.094 1.61 1.61 0 01.507.277l-.386.546a1.562 1.562 0 00-.39-.205 1.178 1.178 0 00-.388-.07.347.347 0 00-.208.052.154.154 0 00-.07.127v.008a.158.158 0 00.022.084.198.198 0 00.076.066.831.831 0 00.147.06c.062.02.14.04.236.061a3.389 3.389 0 01.43.122 1.292 1.292 0 01.328.17.678.678 0 01.207.24.739.739 0 01.071.337v.008a.865.865 0 01-.081.382.82.82 0 01-.229.285 1.032 1.032 0 01-.353.18 1.606 1.606 0 01-.46.061 2.16 2.16 0 01-.71-.116 1.718 1.718 0 01-.593-.346l.43-.514c.277.223.578.335.9.335a.457.457 0 00.236-.05.157.157 0 00.082-.142v-.008a.15.15 0 00-.02-.077.204.204 0 00-.073-.066.753.753 0 00-.143-.062 2.45 2.45 0 00-.233-.062 5.036 5.036 0 01-.413-.113 1.26 1.26 0 01-.331-.16.72.72 0 01-.222-.243.73.73 0 01-.082-.36v-.008a.863.863 0 01.074-.359.794.794 0 01.214-.283 1.007 1.007 0 01.34-.185 1.423 1.423 0 01.448-.066 2.006 2.006 0 01.025 0zm-9.358.025h.742l1.183 2.81h-.825l-.203-.499H8.623l-.198.498h-.81zm2.197.02h.814l.663 1.08.663-1.08h.814v2.79h-.766v-1.602l-.711 1.091h-.016l-.707-1.083v1.593h-.754zm3.469 0h2.235v.658h-1.473v.422h1.334v.61h-1.334v.442h1.493v.658h-2.255zm-5.3.897l-.315.793h.624zm-1.145 5.19h8.014l-4.09 1.348z"/>'),
   xbox: F('<path d="M4.102 21.033C6.211 22.881 8.977 24 12 24c3.026 0 5.789-1.119 7.902-2.967 1.877-1.912-4.316-8.709-7.902-11.417-3.582 2.708-9.779 9.505-7.898 11.417zm11.16-14.406c2.5 2.961 7.484 10.313 6.076 12.912C23.002 17.48 24 14.861 24 12.004c0-3.34-1.365-6.362-3.57-8.536 0 0-.027-.022-.082-.042-.063-.022-.152-.045-.281-.045-.592 0-1.985.434-4.805 3.246zM3.654 3.426c-.057.02-.082.041-.086.042C1.365 5.642 0 8.664 0 12.004c0 2.854.998 5.473 2.661 7.533-1.401-2.605 3.579-9.951 6.08-12.91-2.82-2.813-4.216-3.245-4.806-3.245-.131 0-.223.021-.281.046v-.002zM12 3.551S9.055 1.828 6.755 1.746c-.903-.033-1.454.295-1.521.339C7.379.646 9.659 0 11.984 0H12c2.334 0 4.605.646 6.766 2.085-.068-.046-.615-.372-1.52-.339C14.946 1.828 12 3.545 12 3.545v.006z"/>'),
   folder: L('<path d="M3 7.5a2 2 0 0 1 2-2h3.4l2 2H19a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
   link: L('<path d="M9.5 14.5l5-5"/><path d="M11 6.5l1.2-1.2a4 4 0 0 1 5.7 5.7L16.5 12"/><path d="M13 17.5l-1.2 1.2a4 4 0 0 1-5.7-5.7L7.5 12"/>'),
@@ -228,6 +409,12 @@ const ICONS = {
   plus: L('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'),
   plusSquare: L('<rect x="4" y="4" width="16" height="16" rx="3.5"/><line x1="12" y1="8.5" x2="12" y2="15.5"/><line x1="8.5" y1="12" x2="15.5" y2="12"/>'),
   refresh: L('<path d="M3.5 9a8.5 8.5 0 0 1 14.2-3.2L20 8"/><path d="M20 3.8V8h-4.2"/><path d="M20.5 15a8.5 8.5 0 0 1-14.2 3.2L4 16"/><path d="M4 20.2V16h4.2"/>'),
+  download: L('<path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 18.5h15"/>'),
+  list: L('<line x1="8.5" y1="7" x2="20" y2="7"/><line x1="8.5" y1="12" x2="20" y2="12"/><line x1="8.5" y1="17" x2="20" y2="17"/><circle cx="4.6" cy="7" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.6" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.6" cy="17" r="1.2" fill="currentColor" stroke="none"/>'),
+  gog: F('<path d="M7.15 15.24H4.36a.4.4 0 0 0-.4.4v2c0 .21.18.4.4.4h2.8v1.32h-3.5c-.56 0-1.02-.46-1.02-1.03v-3.39c0-.56.46-1.02 1.03-1.02h3.48v1.32zM8.16 11.54c0 .58-.47 1.05-1.05 1.05H2.63v-1.35h3.78a.4.4 0 0 0 .4-.4V6.39a.4.4 0 0 0-.4-.4H4.39a.4.4 0 0 0-.41.4v2.02c0 .23.18.4.4.4H6v1.35H3.68c-.58 0-1.05-.46-1.05-1.04V5.68c0-.57.47-1.04 1.05-1.04H7.1c.58 0 1.05.47 1.05 1.04v5.86zM21.36 19.36h-1.32v-4.12h-.93a.4.4 0 0 0-.4.4v3.72h-1.33v-4.12h-.93a.4.4 0 0 0-.4.4v3.72h-1.33v-4.42c0-.56.46-1.02 1.03-1.02h5.61v5.44zM21.37 11.54c0 .58-.47 1.05-1.05 1.05h-4.48v-1.35h3.78a.4.4 0 0 0 .4-.4V6.39a.4.4 0 0 0-.4-.4h-2.03a.4.4 0 0 0-.4.4v2.02c0 .23.18.4.4.4h1.62v1.35H16.9c-.58 0-1.05-.46-1.05-1.04V5.68c0-.57.47-1.04 1.05-1.04h3.43c.58 0 1.05.47 1.05 1.04v5.86zM13.72 4.64h-3.44c-.58 0-1.04.47-1.04 1.04v3.44c0 .58.46 1.04 1.04 1.04h3.44c.57 0 1.04-.46 1.04-1.04V5.68c0-.57-.47-1.04-1.04-1.04m-.3 1.75v2.02a.4.4 0 0 1-.4.4h-2.03a.4.4 0 0 1-.4-.4V6.4c0-.22.17-.4.4-.4H13c.23 0 .4.18.4.4zM12.63 13.92H9.24c-.57 0-1.03.46-1.03 1.02v3.39c0 .57.46 1.03 1.03 1.03h3.39c.57 0 1.03-.46 1.03-1.03v-3.39c0-.56-.46-1.02-1.03-1.02m-.3 1.72v2a.4.4 0 0 1-.4.4v-.01H9.94a.4.4 0 0 1-.4-.4v-1.99c0-.22.18-.4.4-.4h2c.22 0 .4.18.4.4zM23.49 1.1a1.74 1.74 0 0 0-1.24-.52H1.75A1.74 1.74 0 0 0 0 2.33v19.34a1.74 1.74 0 0 0 1.75 1.75h20.5A1.74 1.74 0 0 0 24 21.67V2.33c0-.48-.2-.92-.51-1.24m0 20.58a1.23 1.23 0 0 1-1.24 1.24H1.75A1.23 1.23 0 0 1 .5 21.67V2.33a1.23 1.23 0 0 1 1.24-1.24h20.5a1.24 1.24 0 0 1 1.24 1.24v19.34z"/>'),
+  ea: F('<path d="M16.635 6.162l-5.928 9.377H4.24l1.508-2.3h4.024l1.474-2.335H2.264L.79 13.239h2.156L0 17.84h12.072l4.563-7.259 1.652 2.66h-1.401l-1.473 2.299h4.347l1.473 2.3H24zm-11.461.107L3.7 8.604l9.52-.035 1.474-2.3z"/>'),
+  ubisoft: F('<path d="M23.561 11.988C23.301-.304 6.954-4.89.656 6.634c.282.206.661.477.943.672a11.747 11.747 0 00-.976 3.067 11.885 11.885 0 00-.184 2.071C.439 18.818 5.621 24 12.005 24c6.385 0 11.556-5.17 11.556-11.556v-.455zm-20.27 2.06c-.152 1.246-.054 1.636-.054 1.788l-.282.098c-.108-.206-.37-.932-.488-1.908C2.163 10.308 4.7 6.96 8.57 6.33c3.544-.52 6.937 1.68 7.728 4.758l-.282.098c-.087-.087-.228-.336-.77-.878-4.281-4.281-11.002-2.32-11.956 3.74zm11.002 2.081a3.145 3.145 0 01-2.59 1.355 3.15 3.15 0 01-3.155-3.155 3.159 3.159 0 012.927-3.144c1.018-.043 1.972.51 2.416 1.398a2.58 2.58 0 01-.455 2.95c.293.205.575.4.856.595zm6.58.12c-1.669 3.782-5.106 5.766-8.77 5.712-7.034-.347-9.083-8.466-4.38-11.393l.207.206c-.076.108-.358.325-.791 1.182-.51 1.041-.672 2.081-.607 2.732.369 5.67 8.314 6.83 11.045 1.214C21.057 8.217 11.822.401 3.626 6.374l-.184-.184C5.599 2.808 9.816 1.3 13.837 2.309c6.147 1.55 9.453 7.956 7.035 13.94z"/>'),
+  dice: L('<rect x="4" y="4" width="16" height="16" rx="3.5"/><circle cx="8.8" cy="8.8" r="1.25" fill="currentColor" stroke="none"/><circle cx="15.2" cy="15.2" r="1.25" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.25" fill="currentColor" stroke="none"/>'),
   gear: L('<circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.6M12 18.4V21M21 12h-2.6M5.6 12H3M18.4 5.6l-1.85 1.85M7.45 16.55 5.6 18.4M18.4 18.4l-1.85-1.85M7.45 7.45 5.6 5.6"/>'),
   play: F('<path d="M7 5v14l12-7z"/>'),
   search: L('<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/>'),
@@ -244,10 +431,31 @@ const icon = (name) => ICONS[name] || '';
 /* ------------------------------ State ---------------------------------- */
 const state = { games: [], settings: {}, filter: 'all', search: '', sort: 'title', running: new Set(), runningSteam: new Set(), runningPaths: [] };
 
+// Latest message from the updater, mirrored into Settings → Updates.
+let updateState = { state: 'idle' };
+
+// User lists. A Steam-linked list's members are Steam's own (steamGames) plus
+// whatever was added here (games) — Arcadia never writes back to Steam.
+let lists = [];
+const listOf = (filter) => lists.find((l) => 'list:' + l.id === filter) || null;
+const listMembers = (l) => new Set([...(l.steamGames || []), ...(l.games || [])]);
+const isInList = (l, gameId) => (l.games || []).includes(gameId) || (l.steamGames || []).includes(gameId);
+
+// Metacritic scores keyed by Steam appid, filled in the background by main.
+const ratings = new Map();
+const steamAppId = (g) => (g.source === 'steam' && /^steam:\d+$/.test(g.id) ? g.id.slice(6) : null);
+const ratingOf = (g) => {
+  const id = steamAppId(g);
+  return id ? ratings.get(id) || null : null;
+};
+
 const NAV_SOURCES = [
   { key: 'steam', icon: 'steam' },
   { key: 'epic', icon: 'epic' },
   { key: 'xbox', icon: 'xbox' },
+  { key: 'gog', icon: 'gog' },
+  { key: 'ea', icon: 'ea' },
+  { key: 'ubisoft', icon: 'ubisoft' },
   { key: 'shortcut', icon: 'link' },
   { key: 'folder', icon: 'folder' },
   { key: 'manual', icon: 'plusSquare' },
@@ -271,6 +479,9 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 /* ------------------------------- Boot ---------------------------------- */
 async function init() {
+  APP_VERSION = await api.getVersion();
+  IS_STORE = await api.isStore();
+  accountList = await api.listAccounts();
   const data = await api.getState();
   state.games = data.games || [];
   state.settings = data.settings || {};
@@ -292,13 +503,32 @@ async function init() {
   setInterval(refreshDiscordStatus, 6000);
   startRunning();
   api.onCoversUpdated(applyCoverUpdate);
+  api.onUpdateStatus(onUpdateStatus);
+  api.onDownloads(onDownloads);
+  api.onRatings(applyRatings);
+  api.onSteamCollectionsDeleted((ids) => { if (ids && ids.length) toast(t('listSteamApplied', { n: ids.length }), 'success'); });
+  // Whatever was cached from earlier sessions is available immediately.
+  api.allRatings().then((known) => {
+    for (const [appid, score] of Object.entries(known || {})) ratings.set(appid, score);
+    if (ratings.size) renderGrid();
+  });
+  // A finished install rescans in the background; pick up the fresh library.
+  api.onLibraryUpdated((data) => {
+    state.games = data.games || state.games;
+    state.settings = data.settings || state.settings;
+    render();
+    updateCardProgress();
+  });
+  await loadCollections();
+  downloadList = await api.listDownloads();
+  refreshDownloadsButton();
 
   if (state.games.length === 0) await runScan();
   else silentRescan(); // every launch: refresh installs/uninstalls in the background
 
   // First-run: ask about autostart, then run the guided tour.
   if (!state.settings.onboarded) {
-    await askStartup();
+    if (!IS_STORE) await askStartup();
     await runOnboarding();
     state.settings = await api.setSettings({ onboarded: true });
   }
@@ -323,7 +553,10 @@ function logoShapeMarkup(shape, fill) {
   switch (shape) {
     case 'circle': return `<circle cx="256" cy="256" r="226" fill="${fill}"/>`;
     case 'squircle': return `<rect x="40" y="40" width="432" height="432" rx="116" fill="${fill}"/>`;
-    case 'diamond': return `<rect x="92" y="92" width="328" height="328" rx="58" fill="${fill}" transform="rotate(45 256 256)"/>`;
+    // Side 320 → diagonal 452, matching the circle's extent. A 45° square is
+    // measured across its diagonal, so the raw side has to be ÷√2 or the
+    // diamond renders noticeably larger than every other shape.
+    case 'diamond': return `<rect x="96" y="96" width="320" height="320" rx="56" fill="${fill}" transform="rotate(45 256 256)"/>`;
     case 'shield': return `<path d="M256 28 L452 96 V270 C452 374 374 452 256 484 C138 452 60 374 60 270 V96 Z" fill="${fill}"/>`;
     default: return `<polygon points="256,30 452,143 452,369 256,482 60,369 60,143" fill="${fill}"/>`;
   }
@@ -341,11 +574,16 @@ function symbolMarkup(sym, fill, play) {
     case 'star':
       return `<path d="M256 150l33 71 78 10-57 54 14 77-68-37-68 37 14-77-57-54 78-10z" fill="${play}" stroke="${play}" stroke-width="16" stroke-linejoin="round"/>`;
     case 'heart':
-      return `<path d="M256 360C148 288 150 196 212 184c30-6 44 22 44 22s14-28 44-22c62 12 64 104-44 176z" fill="${play}" stroke="${play}" stroke-width="14" stroke-linejoin="round"/>`;
+      // The glyph spans y 184–360, so its own centre sits at 272 — nudge it up
+      // to line up with the other symbols on 256.
+      return `<g transform="translate(0 -16)"><path d="M256 360C148 288 150 196 212 184c30-6 44 22 44 22s14-28 44-22c62 12 64 104-44 176z" fill="${play}" stroke="${play}" stroke-width="14" stroke-linejoin="round"/></g>`;
     case 'letterA':
       return `<path d="M204 332 L256 180 L308 332 M226 286 H286" fill="none" stroke="${play}" stroke-width="29" stroke-linejoin="round" stroke-linecap="round"/>`;
     default:
-      return `<path d="M212 178 L212 334 L352 256 Z" fill="${play}" stroke="${play}" stroke-width="32" stroke-linejoin="round" stroke-linecap="round"/>`;
+      // Rounded corners are part of the path rather than a fat stroke, so the
+      // in-app logo, the window icon and assets/icon.png are the same shape —
+      // a stroked triangle leaves a notch at the closing seam in some renderers.
+      return `<path d="M 196 195 L 196 317 A 26 26 0 0 0 234.7 339.7 L 344.1 278.7 A 26 26 0 0 0 344.1 233.3 L 234.7 172.3 A 26 26 0 0 0 196 195 Z" fill="${play}"/>`;
   }
 }
 
@@ -421,6 +659,13 @@ function applyLang() {
 function visibleGames() {
   let list = state.games.filter((g) => !g.hidden);
   if (state.filter === 'favorites') list = list.filter((g) => g.favorite);
+  else if (state.filter === 'installed') list = list.filter((g) => g.installed !== false);
+  else if (state.filter === 'notInstalled') list = list.filter((g) => g.installed === false);
+  else if (state.filter.startsWith('list:')) {
+    const l = listOf(state.filter);
+    const want = l ? listMembers(l) : new Set();
+    list = list.filter((g) => want.has(g.id));
+  }
   else if (state.filter !== 'all') list = list.filter((g) => g.source === state.filter);
 
   if (state.search.trim()) {
@@ -432,8 +677,13 @@ function visibleGames() {
     title: (a, b) => displayTitle(a).localeCompare(displayTitle(b), lang),
     recent: (a, b) => (b.addedAt || 0) - (a.addedAt || 0),
     played: (a, b) => (b.lastPlayed || 0) - (a.lastPlayed || 0),
+    // Unrated games sort last rather than pretending to be a zero.
+    rating: (a, b) => (ratingOf(b) || -1) - (ratingOf(a) || -1) || displayTitle(a).localeCompare(displayTitle(b), lang),
   };
-  return list.sort(by[state.sort] || by.title);
+  const cmp = by[state.sort] || by.title;
+  // Favourites lead every view, so a starred game always sits top-left however
+  // the rest is sorted. (In the favourites view they all are, so it's a no-op.)
+  return list.sort((a, b) => (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0) || cmp(a, b));
 }
 
 function render(animate) {
@@ -447,8 +697,37 @@ function renderNav() {
   const active = state.filter;
   const live = state.games.filter((g) => !g.hidden);
 
+  const installed = live.filter((g) => g.installed !== false).length;
+  const notInstalled = live.length - installed;
+
+  // Installed / not-installed only mean something once a linked account has
+  // added games that aren't on disk; until then they'd both equal "All games".
+  if (notInstalled > 0) nav.appendChild(el('div', 'nav-section', t('librarySection')));
   nav.appendChild(navItem('all', 'grid', t('allGames'), live.length, active));
+  if (notInstalled > 0) {
+    nav.appendChild(navItem('installed', 'check', t('filterInstalled'), installed, active));
+    nav.appendChild(navItem('notInstalled', 'download', t('filterNotInstalled'), notInstalled, active));
+  }
   nav.appendChild(navItem('favorites', 'star', t('favorites'), live.filter((g) => g.favorite).length, active));
+
+  // Lists: Arcadia's own plus anything mirrored from Steam. Draggable, so the
+  // order here is the user's.
+  if (lists.length) {
+    nav.appendChild(el('div', 'nav-section', t('listsSection')));
+    const box = el('div', 'nav-lists');
+    for (const l of lists) {
+      const members = listMembers(l);
+      const count = live.filter((g) => members.has(g.id)).length;
+      const item = navItem('list:' + l.id, l.steamId ? 'steam' : 'list', l.name, count, active);
+      item.classList.add('nav-list');
+      item.draggable = true;
+      item.dataset.listId = l.id;
+      item.oncontextmenu = (e) => { e.preventDefault(); openListMenu(l, e.clientX, e.clientY); };
+      box.appendChild(item);
+    }
+    wireListDrag(box);
+    nav.appendChild(box);
+  }
 
   let sectionAdded = false;
   for (const s of NAV_SOURCES) {
@@ -469,6 +748,12 @@ function navItem(key, iconName, label, count, active) {
 function viewLabel() {
   if (state.filter === 'all') return t('allGames');
   if (state.filter === 'favorites') return t('favorites');
+  if (state.filter === 'installed') return t('filterInstalled');
+  if (state.filter === 'notInstalled') return t('filterNotInstalled');
+  if (state.filter.startsWith('list:')) {
+    const l = listOf(state.filter);
+    return l ? l.name : t('listsSection');
+  }
   return t('src_' + state.filter);
 }
 
@@ -495,9 +780,55 @@ function renderGrid(animate) {
     if (animate) { cd.classList.add('enter'); cd.style.animationDelay = Math.min(i, 16) * 0.028 + 's'; }
     grid.appendChild(cd);
   });
+  requestVisibleRatings();
 }
 
-const coverUrl = (g) => g.customCover || g.localCover || g.cover || g.autoCover || null;
+// Every image worth trying for a card, best first. For Steam games the URLs
+// Steam's own store API returned (steamArt) replace the guessed legacy ones —
+// those guesses are wrong for newer games and can even "load" a grey
+// placeholder, which no error handler ever catches.
+function coverCandidates(g) {
+  const list = [g.customCover, g.localCover];
+  if (g.source === 'steam' && g.steamArt) {
+    list.push(g.steamArt.cover, g.autoCover, g.steamArt.header);
+  } else {
+    list.push(g.cover, g.autoCover, g.coverFallback);
+  }
+  return [...new Set(list.filter(Boolean))];
+}
+const coverUrl = (g) => coverCandidates(g)[0] || null;
+
+// Points an <img> at a game's candidates in turn; when all fail, `onGiveUp`
+// swaps in the drawn placeholder. One implementation for the grid, the random
+// picker and live cover updates, so they can't drift apart.
+function loadCover(img, g, onGiveUp) {
+  const list = coverCandidates(g);
+  let i = 0;
+  if (!list.length) { onGiveUp(); return; }
+  img.onerror = () => {
+    i += 1;
+    if (i < list.length) img.src = list[i];
+    else { img.onerror = null; onGiveUp(); }
+  };
+  img.addEventListener('load', () => fitCover(img));
+  img.src = list[0];
+}
+
+// Portrait art fills its 2:3 slot. Anything noticeably wider is shown whole
+// over a blurred copy of itself rather than cropped down to a sliver.
+function fitCover(img) {
+  const wide = img.naturalWidth && img.naturalHeight && img.naturalWidth / img.naturalHeight > 0.8;
+  img.classList.toggle('wide', !!wide);
+  const host = img.parentElement;
+  if (!host) return;
+  let blur = host.querySelector(':scope > .cover-blur');
+  if (wide) {
+    if (!blur) { blur = el('div', 'cover-blur'); host.insertBefore(blur, img); }
+    blur.style.backgroundImage = `url("${img.currentSrc || img.src}")`;
+  } else if (blur) {
+    blur.remove();
+  }
+}
 const gameProcs = (g) => (g.exeNames && g.exeNames.length ? g.exeNames : g.exeName ? [g.exeName] : []);
 const isRunning = (g) => {
   if (g.source === 'steam' && state.runningSteam.has(g.id.slice(6))) return true;
@@ -509,6 +840,42 @@ const isRunning = (g) => {
   return false;
 };
 
+const metaBand = (n) => (n >= 75 ? 'good' : n >= 50 ? 'mixed' : 'bad');
+
+function metaBadge(score) {
+  const b = el('div', 'card-meta ' + metaBand(score), String(score));
+  b.title = `${t('metacriticLabel')}: ${score}`;
+  return b;
+}
+
+// Scores arrived for games already on screen — drop the badge in without
+// redrawing the grid (which would reload every cover).
+function applyRatings(batch) {
+  for (const r of batch || []) {
+    if (!r || !r.score) continue;
+    ratings.set(String(r.appid), r.score);
+    const cardEl = document.querySelector(`.card[data-id="${CSS.escape('steam:' + r.appid)}"]`);
+    if (!cardEl || cardEl.querySelector('.card-meta')) continue;
+    cardEl.querySelector('.thumb').appendChild(metaBadge(r.score));
+  }
+  // A rating-sorted view genuinely changes order as scores land, so redraw it.
+  if (state.sort === 'rating' && (batch || []).length) renderGrid();
+}
+
+// Ask main for the scores of what we just drew; anything unknown is queued
+// with priority so the visible grid fills in first.
+function requestVisibleRatings() {
+  const ids = visibleGames().map(steamAppId).filter(Boolean).slice(0, 400);
+  if (!ids.length) return;
+  api.requestRatings(ids, true).then((known) => {
+    let added = 0;
+    for (const [appid, v] of Object.entries(known || {})) {
+      if (!ratings.has(appid)) { ratings.set(appid, v.score); added++; }
+    }
+    if (added) applyRatings(Object.entries(known).map(([appid, v]) => ({ appid, score: v.score })));
+  });
+}
+
 function card(g) {
   const c = el('div', 'card' + (g.missing ? ' missing' : ''));
   c.dataset.id = g.id;
@@ -519,19 +886,27 @@ function card(g) {
 
   if (cover) {
     const img = el('img', 'cover');
-    img.alt = title; img.loading = 'lazy'; img.src = cover;
-    img.onerror = () => {
-      // Fall back: store art → Steam header → SteamGridDB cover → placeholder.
-      if (g.coverFallback && img.src !== g.coverFallback && img.src !== g.autoCover) img.src = g.coverFallback;
-      else if (g.autoCover && img.src !== g.autoCover) img.src = g.autoCover;
-      else { img.remove(); thumb.prepend(placeholder(g)); }
-    };
+    img.alt = title; img.loading = 'lazy';
+    loadCover(img, g, () => { img.remove(); thumb.prepend(placeholder(g)); });
     thumb.appendChild(img);
   } else {
     thumb.appendChild(placeholder(g));
   }
 
-  thumb.appendChild(el('div', 'card-overlay', `<div class="play-btn">${icon('play')}</div><div class="close-btn-center" title="${esc(t('closeGameTip'))}">${icon('close')}</div>`));
+  // Owned but not installed: dim the art, show a badge, and offer "install"
+  // instead of a play button — clicking hands off to the store.
+  const notInstalled = g.installed === false;
+  if (notInstalled) c.classList.add('not-installed');
+
+  thumb.appendChild(el('div', 'card-overlay',
+    `<div class="play-btn">${icon(notInstalled ? 'download' : 'play')}</div>` +
+    `<div class="close-btn-center" title="${esc(t('closeGameTip'))}">${icon('close')}</div>`));
+  if (notInstalled) thumb.appendChild(el('div', 'card-badge', esc(t('notInstalled'))));
+
+  // Metacritic score, top-left, revealed on hover. Colour follows Metacritic's
+  // own bands so a glance is enough: green good, yellow mixed, red poor.
+  const score = ratingOf(g);
+  if (score) thumb.appendChild(metaBadge(score));
   if (g.favorite) thumb.appendChild(el('div', 'card-fav', icon('starFill')));
 
   const menuBtn = el('button', 'card-menu', icon('dots'));
@@ -688,9 +1063,13 @@ const iconObserver = new IntersectionObserver((entries) => {
 
 /* ------------------------------- Actions ------------------------------- */
 async function launch(g) {
+  // Not installed: this is an install request, not a play request.
+  if (g.installed === false) { await installGame(g); return; }
   toast(t('launching', { t: displayTitle(g) }));
   try {
-    await api.launch(g.id);
+    const res = await api.launch(g.id);
+    // A hand-off to the store isn't a play session — don't touch play stats.
+    if (res === 'install') return;
     const local = state.games.find((x) => x.id === g.id);
     if (local) { local.lastPlayed = Date.now(); local.playCount = (local.playCount || 0) + 1; }
     setTimeout(() => refreshRunning(true), 1500); // surface the running indicator promptly
@@ -718,6 +1097,13 @@ async function runScan() {
 
 function scanLabel(key) {
   if (key === 'folders') return t('optFolders');
+  // Account sync reports as "account:<provider>" or "account:<provider>:120/450".
+  if (key.startsWith('account:')) {
+    const [id, count] = key.slice('account:'.length).split(':');
+    const meta = ACCOUNT_META.find((m) => m.id === id);
+    const label = meta ? meta.label : id;
+    return count ? `${label} (${count})` : label;
+  }
   return t('src_' + key) || key;
 }
 
@@ -808,16 +1194,39 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('focus', startRunning);
 window.addEventListener('blur', () => clearTimeout(runTimer));
 
-// A SteamGridDB cover arrived from the main process — store it and refresh the
-// grid (debounced, so a burst of covers triggers a single re-render).
-let coverReloadTimer = null;
+// A SteamGridDB cover arrived from the main process. Patch just that one card:
+// rebuilding the grid would recreate every <img> on the page, and with a linked
+// account that is a thousand of them — they'd all blank out and reload on every
+// single cover that lands.
 function applyCoverUpdate(upd) {
-  if (upd && upd.id) {
-    const g = state.games.find((x) => x.id === upd.id);
-    if (g) g.autoCover = upd.cover;
-  }
-  clearTimeout(coverReloadTimer);
-  coverReloadTimer = setTimeout(() => renderGrid(), 400);
+  if (!upd || !upd.id) return;
+  const g = state.games.find((x) => x.id === upd.id);
+  if (!g) return;
+  // Two senders: Steam's store API (steamArt) and SteamGridDB (cover).
+  if (upd.steamArt) g.steamArt = upd.steamArt;
+  if (upd.cover) g.autoCover = upd.cover;
+
+  const cardEl = document.querySelector(`.card[data-id="${CSS.escape(upd.id)}"]`);
+  if (!cardEl) return; // not on screen in this view — it'll be right when drawn
+  const thumb = cardEl.querySelector('.thumb');
+  const want = coverUrl(g);
+  if (!want) return;
+
+  const img = thumb.querySelector('img.cover');
+  if (img && img.src === want) return;
+
+  // Load the new art off-screen first and only swap once it has arrived, so
+  // the tile never flashes empty — and a candidate that fails just moves on.
+  const next = el('img', 'cover');
+  next.alt = displayTitle(g);
+  let swapped = false;
+  next.onload = () => {
+    if (swapped) return;
+    swapped = true;
+    const old = thumb.querySelector('img.cover') || thumb.querySelector('.card-ph');
+    if (old) old.replaceWith(next); else thumb.prepend(next);
+  };
+  loadCover(next, g, () => { /* keep whatever the card shows now */ });
 }
 
 function updateRunningIndicators() {
@@ -974,6 +1383,14 @@ function openMenu(g, x, y) {
   add(t('launch'), 'play', () => launch(g));
   add(g.favorite ? t('removeFav') : t('addFav'), 'star', () => toggleFavorite(g));
   sep();
+  const addTo = el('div', 'menu-item');
+  addTo.innerHTML = `<span class="ico">${icon('list')}</span><span>${esc(t('listAddTo'))}</span><span class="menu-more">›</span>`;
+  addTo.onclick = () => {
+    const r = addTo.getBoundingClientRect();
+    openListPicker(g, r.left, r.top);
+  };
+  menu.appendChild(addTo);
+  sep();
   add(t('rename'), 'edit', () => renameGame(g));
   add(t('changeCover'), 'image', () => changeCover(g));
   add(t('launchWith'), 'together', () => openCompanionPicker(g));
@@ -1007,6 +1424,648 @@ async function changeCover(g) {
 function openSettings() { buildSettings(); $('#settings-modal').hidden = false; }
 function closeSettings() { $('#settings-modal').hidden = true; }
 
+/* ---------------------------- Random picker ---------------------------- */
+
+// "What should I play?" — pulls one game out of the whole library (installed or
+// just owned) and offers to start it. Rerolling never repeats until the pool is
+// exhausted, so mashing the button actually shows you new things.
+let rolled = new Set();
+let rolledGame = null;
+
+function rollGame() {
+  const pool = state.games.filter((g) => !g.hidden);
+  if (!pool.length) return null;
+  let left = pool.filter((g) => !rolled.has(g.id));
+  if (!left.length) { rolled.clear(); left = pool; } // seen them all: start over
+  const pick = left[Math.floor(Math.random() * left.length)];
+  rolled.add(pick.id);
+  return pick;
+}
+
+function renderRandom() {
+  const body = $('#random-body');
+  body.innerHTML = '';
+  const g = rolledGame;
+  if (!g) {
+    body.appendChild(el('div', 'folder-empty', esc(t('randomEmpty'))));
+    return;
+  }
+
+  const art = el('div', 'rnd-art');
+  const cover = coverUrl(g);
+  if (cover) {
+    const img = el('img');
+    img.alt = displayTitle(g);
+    loadCover(img, g, () => { img.remove(); art.appendChild(placeholder(g)); });
+    art.appendChild(img);
+  } else {
+    art.appendChild(placeholder(g));
+  }
+  body.appendChild(art);
+
+  body.appendChild(el('div', 'rnd-title', esc(displayTitle(g))));
+
+  const srcLabel = t('src_' + g.source) || g.source;
+  const stateLabel = g.installed === false ? t('notInstalled') : t('filterInstalled');
+  body.appendChild(el('div', 'rnd-meta', `${esc(srcLabel)} · ${esc(stateLabel)}`));
+
+  const actions = el('div', 'rnd-actions');
+  const notInstalled = g.installed === false;
+  const go = el('button', 'btn btn-primary',
+    `<span class="ico">${icon(notInstalled ? 'download' : 'play')}</span>` +
+    esc(notInstalled ? t('installGame') : t('randomPlay')));
+  go.onclick = () => { closeRandom(); launch(g); };
+  actions.appendChild(go);
+
+  const again = el('button', 'btn', `<span class="ico">${icon('dice')}</span>${esc(t('randomAnother'))}`);
+  again.onclick = () => { rolledGame = rollGame(); renderRandom(); };
+  actions.appendChild(again);
+  body.appendChild(actions);
+}
+
+function openRandom() {
+  rolledGame = rollGame();
+  renderRandom();
+  $('#random-modal').hidden = false;
+}
+function closeRandom() { $('#random-modal').hidden = true; }
+
+/* ------------------------------ Downloads ------------------------------ */
+
+let downloadList = [];
+
+const fmtBytes = (n) => {
+  if (!n || n < 0) return '';
+  const u = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let i = 0;
+  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+  return `${n < 10 && i > 0 ? n.toFixed(1) : Math.round(n)} ${u[i]}`;
+};
+
+const fmtDuration = (secs) => {
+  if (secs == null || !isFinite(secs)) return '';
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  if (h) return `${h} sa ${m} dk`;
+  if (m) return `${m} dk`;
+  return `${Math.max(1, Math.round(secs))} sn`;
+};
+
+const DL_STATE_KEY = {
+  pending: 'dlPending', downloading: 'dlDownloading',
+  installing: 'dlInstalling', done: 'dlDone', error: 'dlError', stalled: 'dlStalled',
+};
+const DL_FINISHED = new Set(['done', 'error', 'stalled']);
+
+function openDownloads() { buildDownloads(); $('#downloads-modal').hidden = false; }
+function closeDownloads() { $('#downloads-modal').hidden = true; }
+
+function downloadRow(d) {
+  const row = el('div', 'dl-row' + (d.state === 'done' ? ' done' : '') + (d.state === 'error' || d.state === 'stalled' ? ' failed' : ''));
+  const meta = [];
+  if (d.state === 'downloading' || d.state === 'installing') {
+    if (d.total) meta.push(`${fmtBytes(d.downloaded)} / ${fmtBytes(d.total)}`);
+    if (d.speed > 0) meta.push(`${fmtBytes(d.speed)}/s`);
+    if (d.eta) meta.push(t('dlEta', { t: fmtDuration(d.eta) }));
+  } else if (d.state === 'error') {
+    meta.push(d.error || '');
+  }
+
+  const stateLabel = t(DL_STATE_KEY[d.state] || 'dlPending');
+  const pct = d.percent;
+  row.innerHTML =
+    '<div class="dl-head">' +
+      `<span class="dl-title">${esc(d.title)}</span>` +
+      `<span class="dl-pct">${pct == null ? '' : pct + '%'}</span>` +
+    '</div>' +
+    `<div class="dl-bar${pct == null && d.state !== 'done' && d.state !== 'error' ? ' indeterminate' : ''}">` +
+      `<span style="width:${pct == null ? 100 : pct}%"></span>` +
+    '</div>' +
+    `<div class="dl-meta"><span class="dl-state">${esc(stateLabel)}</span>${meta.length ? ' · ' + esc(meta.join(' · ')) : ''}</div>`;
+
+  const actions = el('div', 'dl-actions');
+  const openBtn = el('button', 'btn btn-small', esc(t('dlOpenClient')));
+  openBtn.onclick = () => api.openStoreClient(d.source);
+  actions.appendChild(openBtn);
+
+  if (DL_FINISHED.has(d.state)) {
+    // Nothing left to stop — the row is just history now.
+    const rmBtn = el('button', 'btn btn-small', esc(t('dlRemove')));
+    rmBtn.onclick = async () => { downloadList = await api.forgetDownload(d.id); buildDownloads(); updateCardProgress(); };
+    actions.appendChild(rmBtn);
+  } else {
+    const cancelBtn = el('button', 'btn btn-small btn-danger', esc(t('dlCancel')));
+    cancelBtn.onclick = async () => {
+      cancelBtn.disabled = true;
+      const res = await api.cancelDownload(d.id);
+      await loadCollections();
+  downloadList = await api.listDownloads();
+      if (res && res.openedStore) toast(t('dlCancelledStore'));
+      buildDownloads();
+      refreshDownloadsButton();
+      updateCardProgress();
+    };
+    actions.appendChild(cancelBtn);
+  }
+  row.appendChild(actions);
+
+  if (d.state === 'stalled') row.appendChild(el('div', 'hint', esc(t('dlStalledHint'))));
+  else if (d.source === 'xbox' && d.state !== 'done') row.appendChild(el('div', 'hint', esc(t('dlXboxNote'))));
+  return row;
+}
+
+function buildDownloads() {
+  const body = $('#downloads-body');
+  body.innerHTML = '';
+  if (!downloadList.length) {
+    body.appendChild(el('div', 'folder-empty', esc(t('dlEmpty'))));
+    return;
+  }
+  for (const d of downloadList) body.appendChild(downloadRow(d));
+
+  if (downloadList.some((d) => DL_FINISHED.has(d.state))) {
+    const clear = el('button', 'btn', esc(t('dlClear')));
+    clear.onclick = async () => { downloadList = await api.clearDownloads(); buildDownloads(); };
+    const wrap = el('div', 'upd-actions');
+    wrap.appendChild(clear);
+    body.appendChild(wrap);
+  }
+  body.appendChild(el('div', 'hint', esc(t('dlHandoff'))));
+}
+
+// The titlebar button only exists while something is being installed.
+function refreshDownloadsButton() {
+  const btn = $('#btn-downloads');
+  const active = downloadList.filter((d) => !DL_FINISHED.has(d.state));
+  btn.hidden = downloadList.length === 0;
+  $('#dl-badge').textContent = active.length || '';
+  btn.classList.toggle('busy', active.length > 0);
+}
+
+function onDownloads(list) {
+  const before = new Map(downloadList.map((d) => [d.id, d.state]));
+  downloadList = list || [];
+  for (const d of downloadList) {
+    if (d.state === 'done' && before.get(d.id) !== 'done') toast(t('dlFinished', { t: d.title }), 'success');
+  }
+  refreshDownloadsButton();
+  if (!$('#downloads-modal').hidden) buildDownloads();
+  updateCardProgress();
+}
+
+// Paint the live percentage onto the grid cards themselves, so progress is
+// visible without opening the downloads screen.
+function updateCardProgress() {
+  const byId = new Map(downloadList.map((d) => [d.id, d]));
+  for (const cardEl of document.querySelectorAll('.card')) {
+    const d = byId.get(cardEl.dataset.id);
+    let bar = cardEl.querySelector('.card-progress');
+    if (!d || DL_FINISHED.has(d.state)) { if (bar) bar.remove(); continue; }
+    if (!bar) {
+      bar = el('div', 'card-progress', '<span></span>');
+      cardEl.querySelector('.thumb').appendChild(bar);
+    }
+    bar.classList.toggle('indeterminate', d.percent == null);
+    bar.firstChild.style.width = (d.percent == null ? 100 : d.percent) + '%';
+  }
+}
+
+async function installGame(g) {
+  if (!g.installUrl) { toast(t('dlNoUrl'), 'error'); return; }
+  try {
+    downloadList = await api.installGame(g.id);
+    toast(t('dlStarted', { t: displayTitle(g) }));
+    refreshDownloadsButton();
+    updateCardProgress();
+  } catch (err) {
+    toast(t('launchFailed', { e: err.message }), 'error');
+  }
+}
+
+/* ------------------------------ Accounts ------------------------------- */
+
+const ACCOUNT_META = [
+  { id: 'steam', label: 'Steam', icon: 'steam' },
+  { id: 'epic', label: 'Epic Games', icon: 'epic' },
+  { id: 'xbox', label: 'Xbox / Game Pass', icon: 'xbox' },
+  { id: 'gog', label: 'GOG.com', icon: 'gog' },
+  { id: 'ea', label: 'EA app', icon: 'ea' },
+  { id: 'ubisoft', label: 'Ubisoft Connect', icon: 'ubisoft' },
+];
+
+let accountList = [];
+
+// `heading: false` for the dedicated modal, whose own title already says it.
+function accountsGroup({ heading = true } = {}) {
+  const g = el('div', 'setting-group setting-group--acc');
+  if (heading) g.appendChild(el('h3', null, esc(t('settingsAccounts'))));
+
+  for (const meta of ACCOUNT_META) {
+    const acc = accountList.find((a) => a.id === meta.id) || { linked: false };
+    const row = el('div', 'acc-row');
+    const sub = acc.linked ? t('accLinked', { n: acc.name || '' }) : '';
+    row.innerHTML =
+      `<span class="acc-ico">${icon(meta.icon)}</span>` +
+      `<span class="acc-text"><span class="acc-name">${esc(meta.label)}</span>` +
+      (sub ? `<span class="acc-sub">${esc(sub)}</span>` : '') +
+      '</span>';
+
+    const btn = el('button', 'btn' + (acc.linked ? '' : ' btn-primary'),
+      esc(acc.linked ? t('accDisconnect') : t('accConnect')));
+    btn.onclick = async () => {
+      btn.disabled = true;
+      try {
+        if (acc.linked) {
+          accountList = await api.logoutAccount(meta.id);
+          toast(t('accDisconnected', { s: meta.label }));
+          await refreshLibrary();
+        } else {
+          const res = await api.loginAccount(meta.id);
+          accountList = await api.listAccounts();
+          if (res && res.linked) {
+            toast(t('accConnected', { s: meta.label }));
+            await syncAccounts(); // pull the freshly linked library in
+            if (meta.id === 'steam') await loadCollections({ ask: true });
+          } else {
+            // Silence here reads as "the button is broken", so say what happened.
+            toast(t('accCancelled', { s: meta.label }), 'error');
+          }
+        }
+      } catch (err) {
+        toast(t('accFailed', { s: meta.label, e: err.message }), 'error');
+      } finally {
+        btn.disabled = false;
+        refreshAccountsGroup();
+      }
+    };
+    row.appendChild(btn);
+    g.appendChild(row);
+  }
+
+  if (accountList.some((a) => a.linked)) {
+    const syncBtn = el('button', 'btn', `<span class="ico">${icon('refresh')}</span>${esc(t('accSync'))}`);
+    syncBtn.onclick = async () => {
+      syncBtn.disabled = true;
+      try { await syncAccounts(); } finally { syncBtn.disabled = false; }
+    };
+    const wrap = el('div', 'upd-actions');
+    wrap.appendChild(syncBtn);
+    g.appendChild(wrap);
+  }
+
+  g.appendChild(el('div', 'hint', esc(t('accHint'))));
+  return g;
+}
+
+// The accounts UI lives in two places: its own modal (the sidebar button) and
+// a section inside Settings. Both render the same group.
+// Closes Steam through its own -shutdown, writes the queued collection
+// deletions and starts Steam again. Only ever run on the user's say-so.
+async function applySteamDeletesNow() {
+  showScan(true, t('steamApplying'));
+  try {
+    const res = await api.applySteamDeletesNow();
+    if (res && res.error === 'steam-busy') toast(t('steamBusy'), 'error');
+    else if (res && res.error) toast(t('steamBusy'), 'error');
+    else if (res && res.applied && res.applied.length) toast(t('steamApplied', { n: res.applied.length }), 'success');
+  } finally {
+    showScan(false);
+    refreshListsGroup();
+  }
+}
+
+// Settings → Steam Lists: toggle the sidebar mirror, re-read the collections,
+// and show what was found so it's obvious whether it worked.
+function steamListsGroup() {
+  const g = el('div', 'setting-group setting-group--lists');
+  g.appendChild(el('h3', null, esc(t('steamListsSection'))));
+
+  const row = el('div', 'toggle-row');
+  const on = !!state.settings.steamCollections;
+  row.innerHTML = `<label>${esc(t('steamListsLabel'))}</label><span class="switch"><input type="checkbox" ${on ? 'checked' : ''}><span class="track"></span></span>`;
+  row.querySelector('input').onchange = async (e) => {
+    state.settings = await api.setSettings({ steamCollections: e.target.checked, steamCollectionsAsked: true });
+    await loadCollections();
+    render();
+    refreshListsGroup();
+  };
+  g.appendChild(row);
+
+  const steamLists = lists.filter((l) => l.steamId);
+  if (steamLists.length) {
+    const box = el('div', 'folder-list');
+    for (const l of steamLists) {
+      const item = el('div', 'folder-item');
+      item.innerHTML = `<span class="path" title="${esc(l.name)}">${esc(l.name)}</span><span class="acc-sub">${(l.steamGames || []).length}</span>`;
+      box.appendChild(item);
+    }
+    g.appendChild(box);
+  } else {
+    g.appendChild(el('div', 'folder-empty', esc(t('steamListsNone'))));
+  }
+
+  const refresh = el('button', 'btn', `<span class="ico">${icon('refresh')}</span>${esc(t('steamListsRefresh'))}`);
+  refresh.onclick = async () => { await loadCollections(); refreshListsGroup(); };
+  const wrap = el('div', 'upd-actions');
+  wrap.appendChild(refresh);
+  g.appendChild(wrap);
+
+  // Deletions still waiting for Steam to close, with a way to do it now.
+  const pendingBox = el('div', 'upd-actions');
+  g.appendChild(pendingBox);
+  api.pendingSteamDeletes().then((pending) => {
+    if (!pending || !pending.length) return;
+    pendingBox.before(el('div', 'upd-status', esc(t('steamPendingInfo', { n: pending.length }))));
+    const go = el('button', 'btn btn-primary', `<span class="ico">${icon('refresh')}</span>${esc(t('steamApplyNow'))}`);
+    go.onclick = () => { if (confirm(t('steamApplyAsk'))) applySteamDeletesNow(); };
+    pendingBox.appendChild(go);
+  });
+
+  g.appendChild(el('div', 'hint', esc(t('steamListsHint'))));
+  return g;
+}
+
+function refreshListsGroup() {
+  const old = $('#settings-body .setting-group--lists');
+  if (old) old.replaceWith(steamListsGroup());
+}
+
+function refreshAccountsGroup() {
+  const inSettings = $('#settings-body .setting-group--acc');
+  if (inSettings) inSettings.replaceWith(accountsGroup());
+  const inModal = $('#accounts-body .setting-group--acc');
+  if (inModal) inModal.replaceWith(accountsGroup({ heading: false }));
+}
+
+function openAccounts() {
+  const body = $('#accounts-body');
+  body.innerHTML = '';
+  body.appendChild(accountsGroup({ heading: false }));
+  $('#accounts-modal').hidden = false;
+}
+function closeAccounts() { $('#accounts-modal').hidden = true; }
+
+// Re-read the store after accounts changed, so the grid reflects it at once.
+/* -------------------------------- Lists ---------------------------------- */
+
+// Pulls Steam's collections in (when enabled) and reloads every list. On the
+// first sight after linking Steam it asks whether to mirror them at all.
+async function loadCollections({ ask = false } = {}) {
+  if (ask && !state.settings.steamCollectionsAsked) {
+    let found = [];
+    try { found = await api.syncCollections(); } catch { /* ignore */ }
+    // syncCollections only mirrors when the setting is on, so peek first.
+    const steamLists = found.filter((l) => l.steamId);
+    if (!state.settings.steamCollections) {
+      const probe = await api.getLists();
+      const names = (steamLists.length ? steamLists : probe.filter((l) => l.steamId)).slice(0, 3).map((l) => l.name).join(', ');
+      const yes = await askCollections(steamLists.length || probe.filter((l) => l.steamId).length, names);
+      state.settings = await api.setSettings({ steamCollections: yes, steamCollectionsAsked: true });
+    }
+  }
+  try { lists = await api.syncCollections(); } catch { lists = []; }
+  renderNav();
+}
+
+// Drag a list up or down to reorder; the order is saved as soon as it changes.
+function wireListDrag(box) {
+  let dragged = null;
+  box.addEventListener('dragstart', (e) => {
+    const item = e.target.closest('.nav-list');
+    if (!item) return;
+    dragged = item;
+    item.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    // Firefox/Chromium need *some* payload for a drag to start.
+    try { e.dataTransfer.setData('text/plain', item.dataset.listId); } catch { /* ignore */ }
+  });
+
+  box.addEventListener('dragover', (e) => {
+    if (!dragged) return;
+    e.preventDefault();
+    const over = e.target.closest('.nav-list');
+    if (!over || over === dragged) return;
+    const r = over.getBoundingClientRect();
+    const after = e.clientY > r.top + r.height / 2;
+    box.insertBefore(dragged, after ? over.nextSibling : over);
+  });
+
+  box.addEventListener('dragend', async () => {
+    if (!dragged) return;
+    dragged.classList.remove('dragging');
+    dragged = null;
+    const ids = [...box.querySelectorAll('.nav-list')].map((n) => n.dataset.listId);
+    lists = await api.reorderLists(ids);
+  });
+}
+
+function openListMenu(l, x, y) {
+  const menu = $('#ctx');
+  menu.innerHTML = '';
+  const add = (label, ic, fn, cls) => {
+    const item = el('div', 'menu-item' + (cls ? ' ' + cls : ''));
+    item.innerHTML = `<span class="ico">${icon(ic)}</span><span>${esc(label)}</span>`;
+    item.onclick = () => { closeMenu(); fn(); };
+    menu.appendChild(item);
+  };
+
+  add(t('rename'), 'edit', async () => {
+    const name = prompt(t('listRenamePrompt'), l.name);
+    if (name === null) return;
+    lists = await api.renameList(l.id, name.trim());
+    render();
+  });
+  menu.appendChild(el('div', 'menu-sep'));
+  add(t('listDelete'), 'trash', async () => {
+    // A Steam-linked list is deleted in Steam too, on every device — ask first.
+    if (l.steamId && !confirm(t('listDeleteSteamConfirm', { n: l.name }))) return;
+    const res = await api.deleteList(l.id);
+    lists = res.lists;
+    if (state.filter === 'list:' + l.id) state.filter = 'all';
+    render();
+    if (res.steam === 'applied') toast(t('listDeletedSteam', { n: l.name }));
+    else if (res.steam === 'pending') {
+      // Steam is open: offer to close it now, or let it happen whenever the
+      // user quits Steam themselves.
+      if (confirm(t('steamApplyAsk'))) await applySteamDeletesNow();
+      else toast(t('listDeletedSteamPending', { n: l.name }));
+    } else toast(t('listDeleted', { n: l.name }));
+  }, 'danger');
+
+  menu.hidden = false;
+  menu.style.left = Math.max(8, Math.min(x, window.innerWidth - 204)) + 'px';
+  menu.style.top = Math.max(8, Math.min(y, window.innerHeight - menu.offsetHeight - 8)) + 'px';
+}
+
+// "Add to list" submenu for a game: every list, plus a way to make a new one.
+function openListPicker(g, x, y) {
+  const menu = $('#ctx');
+  menu.innerHTML = '';
+
+  for (const l of lists) {
+    const inList = isInList(l, g.id);
+    const fromSteam = (l.steamGames || []).includes(g.id);
+    const item = el('div', 'menu-item' + (fromSteam ? ' disabled' : ''));
+    item.innerHTML =
+      `<span class="ico">${icon(inList ? 'check' : 'list')}</span>` +
+      `<span>${esc(l.name)}</span>` +
+      (l.steamId ? `<span class="menu-tag">Steam</span>` : '');
+    if (!fromSteam) {
+      item.onclick = async () => {
+        closeMenu();
+        lists = await api.setListGame(l.id, g.id, !inList);
+        render();
+        toast(inList ? t('listRemoved', { t: displayTitle(g), n: l.name })
+                     : t('listAdded', { t: displayTitle(g), n: l.name }));
+      };
+    } else {
+      // Membership that came from Steam can't be removed here, because Arcadia
+      // doesn't write to Steam's collection store.
+      item.title = t('listSteamLocked');
+    }
+    menu.appendChild(item);
+  }
+
+  if (lists.length) menu.appendChild(el('div', 'menu-sep'));
+  const mk = el('div', 'menu-item');
+  mk.innerHTML = `<span class="ico">${icon('plus')}</span><span>${esc(t('listNew'))}</span>`;
+  mk.onclick = async () => {
+    closeMenu();
+    const name = prompt(t('listNewPrompt'), '');
+    if (name === null || !name.trim()) return;
+    const created = await api.createList(name.trim());
+    lists = await api.setListGame(created.id, g.id, true);
+    render();
+    toast(t('listAdded', { t: displayTitle(g), n: created.name }));
+  };
+  menu.appendChild(mk);
+
+  menu.hidden = false;
+  menu.style.left = Math.max(8, Math.min(x, window.innerWidth - 224)) + 'px';
+  menu.style.top = Math.max(8, Math.min(y, window.innerHeight - menu.offsetHeight - 8)) + 'px';
+}
+
+function askCollections(n, names) {
+  return new Promise((resolve) => {
+    const backdrop = el('div', 'modal-backdrop');
+    const modal = el('div', 'modal modal-sm');
+    modal.innerHTML = `<div class="modal-head"><h2>${esc(t('steamListsAskTitle'))}</h2></div>
+      <div class="modal-body"><p class="startup-q">${esc(t('steamListsAskText', { n, names }))}</p></div>`;
+    const foot = el('div', 'modal-foot');
+    const no = el('button', 'btn', esc(t('steamListsNo')));
+    no.onclick = () => { backdrop.remove(); resolve(false); };
+    const yes = el('button', 'btn btn-primary', esc(t('steamListsYes')));
+    yes.onclick = () => { backdrop.remove(); resolve(true); };
+    foot.appendChild(no); foot.appendChild(yes);
+    modal.appendChild(foot);
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+  });
+}
+
+async function refreshLibrary() {
+  const data = await api.getState();
+  state.games = data.games || [];
+  state.settings = data.settings || state.settings;
+  render();
+}
+
+async function syncAccounts() {
+  showScan(true, t('accSync'));
+  const stop = api.onScanProgress((key) => {
+    $('#scan-text').textContent = t('accSyncing', { s: scanLabel(key) });
+  });
+  try {
+    const res = await api.syncAccounts();
+    state.games = res.games || [];
+    state.settings = res.settings || state.settings;
+    render();
+    for (const e of res.errors || []) {
+      const label = (ACCOUNT_META.find((m) => m.id === e.id) || {}).label || e.id;
+      toast(e.code === 'expired' ? t('accExpired', { s: label }) : t('accFailed', { s: label, e: e.message }), 'error');
+    }
+  } catch (err) {
+    toast(t('accFailed', { s: '', e: err.message }), 'error');
+  } finally {
+    stop();
+    showScan(false);
+  }
+}
+
+/* ------------------------------ Updates -------------------------------- */
+
+// One line describing where the updater currently is, or '' while idle.
+function updateStatusText() {
+  const u = updateState;
+  switch (u.state) {
+    case 'checking': return t('updChecking');
+    case 'latest': return t('updLatest');
+    case 'available': return t('updAvailable', { v: u.version });
+    case 'downloading': return t('updDownloading', { p: u.percent });
+    case 'downloaded': return t('updDownloaded', { v: u.version });
+    case 'error': return t('updError', { e: u.message });
+    case 'dev': return t('updDev');
+    default: return '';
+  }
+}
+
+function updateGroup() {
+  const g = el('div', 'setting-group');
+  g.appendChild(el('h3', null, esc(t('settingsUpdates'))));
+  if (IS_STORE) {
+    g.appendChild(el('div', 'hint', esc(t('updStore'))));
+    return g;
+  }
+
+  const row = el('div', 'toggle-row');
+  const on = state.settings.autoUpdate !== false;
+  row.innerHTML = `<label>${esc(t('autoUpdateLabel'))}</label><span class="switch"><input type="checkbox" ${on ? 'checked' : ''}><span class="track"></span></span>`;
+  row.querySelector('input').onchange = async (e) => {
+    state.settings = await api.setSettings({ autoUpdate: e.target.checked });
+  };
+  g.appendChild(row);
+
+  const actions = el('div', 'upd-actions');
+  const checkBtn = el('button', 'btn', `<span class="ico">${icon('refresh')}</span>${esc(t('checkUpdate'))}`);
+  checkBtn.onclick = () => { api.checkUpdate(); };
+  actions.appendChild(checkBtn);
+
+  // Only offered once a build is on disk and ready to run.
+  if (updateState.state === 'downloaded') {
+    const installBtn = el('button', 'btn btn-primary', esc(t('updInstall')));
+    installBtn.onclick = () => api.installUpdate();
+    actions.appendChild(installBtn);
+  }
+  g.appendChild(actions);
+
+  const status = updateStatusText();
+  if (status) g.appendChild(el('div', 'upd-status', esc(status)));
+  g.appendChild(el('div', 'hint', esc(t('autoUpdateHint'))));
+  return g;
+}
+
+function onUpdateStatus(msg) {
+  updateState = msg || { state: 'idle' };
+  refreshUpdateGroup();
+  // Tell the user out here too — they rarely have Settings open when the
+  // launch-time check finishes.
+  if (msg.state === 'downloaded') toast(t('updDownloaded', { v: msg.version }));
+  else if (msg.state === 'available' && state.settings.autoUpdate === false) {
+    toast(t('updAvailable', { v: msg.version }));
+  }
+}
+
+// Refresh just the Updates group in place so progress ticks don't rebuild
+// (and scroll-reset) the whole settings panel.
+function refreshUpdateGroup() {
+  const modal = $('#settings-modal');
+  if (!modal || modal.hidden) return;
+  const old = $('#settings-body .setting-group--upd');
+  const fresh = updateGroup();
+  fresh.classList.add('setting-group--upd');
+  if (old) old.replaceWith(fresh);
+}
+
 function buildSettings() {
   const body = $('#settings-body');
   const s = state.settings;
@@ -1016,7 +2075,7 @@ function buildSettings() {
   // Sources
   const g1 = el('div', 'setting-group');
   g1.appendChild(el('h3', null, esc(t('settingsSources'))));
-  for (const src of [['steam', 'src_steam'], ['epic', 'src_epic'], ['xbox', 'src_xbox'], ['shortcut', 'src_shortcut'], ['folders', 'optFolders']]) {
+  for (const src of [['steam', 'src_steam'], ['epic', 'src_epic'], ['xbox', 'src_xbox'], ['gog', 'src_gog'], ['ea', 'src_ea'], ['ubisoft', 'src_ubisoft'], ['shortcut', 'src_shortcut'], ['folders', 'optFolders']]) {
     const row = el('div', 'toggle-row');
     const checked = sources[src[0]] !== false ? 'checked' : '';
     row.innerHTML = `<label>${esc(t(src[1]))}</label><span class="switch"><input type="checkbox" data-src="${src[0]}" ${checked}><span class="track"></span></span>`;
@@ -1057,14 +2116,26 @@ function buildSettings() {
   g3.appendChild(langSel);
   body.appendChild(g3);
 
-  // Startup
+  // Startup — not in the Store build, where Windows owns app startup.
   const gStart = el('div', 'setting-group');
+  if (IS_STORE) gStart.hidden = true;
   gStart.appendChild(el('h3', null, esc(t('settingsStartup'))));
   const startRow = el('div', 'toggle-row');
   startRow.innerHTML = `<label>${esc(t('autostartLabel'))}</label><span class="switch"><input type="checkbox" ${s.autostart ? 'checked' : ''}><span class="track"></span></span>`;
   startRow.querySelector('input').onchange = async (e) => { state.settings = await api.setAutostart(e.target.checked); };
   gStart.appendChild(startRow);
   body.appendChild(gStart);
+
+  // Linked store accounts
+  body.appendChild(accountsGroup());
+
+  // Steam collections — only meaningful once Steam is actually linked/installed
+  body.appendChild(steamListsGroup());
+
+  // Updates
+  const gUpd = updateGroup();
+  gUpd.classList.add('setting-group--upd');
+  body.appendChild(gUpd);
 
   // Accent
   const g4 = el('div', 'setting-group');
@@ -1277,13 +2348,22 @@ function bindEvents() {
   $('#btn-settings').onclick = openSettings;
   $('#settings-close').onclick = closeSettings;
   $('#settings-modal').onclick = (e) => { if (e.target.id === 'settings-modal') closeSettings(); };
+  $('#btn-downloads').onclick = openDownloads;
+  $('#downloads-close').onclick = closeDownloads;
+  $('#downloads-modal').onclick = (e) => { if (e.target.id === 'downloads-modal') closeDownloads(); };
+  $('#btn-accounts').onclick = openAccounts;
+  $('#accounts-close').onclick = closeAccounts;
+  $('#accounts-modal').onclick = (e) => { if (e.target.id === 'accounts-modal') closeAccounts(); };
+  $('#btn-random').onclick = openRandom;
+  $('#random-close').onclick = closeRandom;
+  $('#random-modal').onclick = (e) => { if (e.target.id === 'random-modal') closeRandom(); };
 
   $('#search').oninput = (e) => { state.search = e.target.value; renderGrid(); };
   $('#sort').onchange = async (e) => { state.sort = e.target.value; state.settings = await api.setSettings({ sortBy: state.sort }); renderGrid(); };
 
   document.addEventListener('click', (e) => { if (!$('#ctx').hidden && !$('#ctx').contains(e.target)) closeMenu(); });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeMenu(); closeSettings(); }
+    if (e.key === 'Escape') { closeMenu(); closeSettings(); closeDownloads(); closeAccounts(); closeRandom(); }
     if (e.key === '/' && document.activeElement !== $('#search')) { e.preventDefault(); $('#search').focus(); }
   });
 }

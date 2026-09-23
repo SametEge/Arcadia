@@ -1,8 +1,11 @@
 'use strict';
 
-// Optional SteamGridDB cover lookup. The API key is supplied by the user and
-// stored in their local settings — never hard-coded — so the public repo ships
-// no secret. Without a key this module simply returns nothing.
+// SteamGridDB cover lookup. The caller passes the key: either the user's own
+// from Settings, or the shared fallback in main.js (DEFAULT_SGDB_KEY) so covers
+// work out of the box. That fallback is committed and therefore public — treat
+// it as a shared quota, not a secret, and expect it to be rate-limited or
+// revoked one day; a user's own key always wins. Without any key this module
+// simply returns nothing.
 const https = require('https');
 
 const API = 'https://www.steamgriddb.com/api/v2';

@@ -6,7 +6,11 @@
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder",
-    "icon": "py build/make_icon.py"
+    "release": "electron-builder --publish always",
+    "test": "node build/test_i18n.js && node build/test_merge.js && node build/test_downloads.js && node build/test_epic_catalog.js && node build/test_lists.js && node build/test_accounts.js && node build/test_steam_delete.js && node build/test_covers.js",
+    "test:login": "electron build/test_login_window.js",
+    "icon": "py build/make_icon.py",
+    "dist:store": "node build/dist-store.js"
   },
   "keywords": [
     "game-launcher",
@@ -35,6 +39,13 @@
       "assets/**/*"
     ],
     "artifactName": "Arcadia-Setup-${version}.${ext}",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "SametEge",
+        "repo": "Arcadia"
+      }
+    ],
     "win": {
       "target": "nsis",
       "icon": "assets/icon.ico"
@@ -50,6 +61,31 @@
       "uninstallerIcon": "assets/icon.ico",
       "installerHeaderIcon": "assets/icon.ico",
       "deleteAppDataOnUninstall": false
-    }
+    },
+    "appx": {
+      "identityName": "SametEge.ArcadiaLauncher",
+      "publisher": "CN=3CBA1AAD-ECCE-446B-809B-698282173C40",
+      "publisherDisplayName": "Samet Ege",
+      "applicationId": "Arcadia",
+      "displayName": "Arcadia Launcher",
+      "backgroundColor": "#0b0b0d",
+      "languages": [
+        "en-US",
+        "tr-TR"
+      ],
+      "addAutoLaunchExtension": false,
+      "artifactName": "Arcadia-${version}-Store.${ext}",
+      "minVersion": "10.0.17763.0",
+      "maxVersionTested": "10.0.26100.0"
+    },
+    "extraFiles": [
+      {
+        "from": "LICENSE",
+        "to": "LICENSE.txt"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }

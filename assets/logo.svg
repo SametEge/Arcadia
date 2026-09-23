@@ -14,6 +14,9 @@
            stroke="url(#arc-bg)" stroke-width="18" stroke-linejoin="round"/>
   <polygon points="256,30 452,143 452,369 256,482 60,369 60,143" fill="url(#arc-sheen)"/>
 
-  <path d="M212 178 L212 334 L352 256 Z" fill="#FFFFFF" stroke="#FFFFFF"
-        stroke-width="32" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Play triangle with its rounded corners baked into the path. Fattening a
+       thin triangle with a wide stroke left a notch where the outline closed
+       back on itself in some renderers (notably the Pillow icon builder). -->
+  <path d="M 196 195 L 196 317 A 26 26 0 0 0 234.7 339.7 L 344.1 278.7 A 26 26 0 0 0 344.1 233.3 L 234.7 172.3 A 26 26 0 0 0 196 195 Z"
+        fill="#FFFFFF"/>
 </svg>

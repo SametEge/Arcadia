@@ -3,6 +3,7 @@
 const { shell } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
+const { t } = require('./i18n');
 
 // Launch a game by its stored descriptor.
 //   { type: 'url',  value: 'steam://rungameid/730' }            -> openExternal (protocols)
@@ -11,7 +12,7 @@ const { spawn } = require('child_process');
 //     args: '--launch-product=valorant --launch-patchline=live' } -> spawn with args
 async function launchGame(game) {
   if (!game || !game.launch || !game.launch.value) {
-    throw new Error('Bu oyun için başlatma hedefi bulunamadı.');
+    throw new Error(t('noLaunchTarget'));
   }
   const { type, value, args } = game.launch;
 

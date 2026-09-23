@@ -23,6 +23,33 @@ contextBridge.exposeInMainWorld('arcadia', {
   closeGame: (id) => ipcRenderer.invoke('game:close', id),
   setAutostart: (on) => ipcRenderer.invoke('app:setAutostart', on),
   setIcon: (dataUrl) => ipcRenderer.invoke('app:setIcon', dataUrl),
+  listDownloads: () => ipcRenderer.invoke('downloads:list'),
+  installGame: (id) => ipcRenderer.invoke('downloads:install', id),
+  forgetDownload: (id) => ipcRenderer.invoke('downloads:forget', id),
+  cancelDownload: (id) => ipcRenderer.invoke('downloads:cancel', id),
+  clearDownloads: () => ipcRenderer.invoke('downloads:clear'),
+  openStoreClient: (source) => ipcRenderer.invoke('downloads:openClient', source),
+  requestRatings: (appids, front) => ipcRenderer.invoke('ratings:request', appids, front),
+  allRatings: () => ipcRenderer.invoke('ratings:all'),
+  ratingStats: () => ipcRenderer.invoke('ratings:stats'),
+  syncCollections: () => ipcRenderer.invoke('collections:sync'),
+  pendingSteamDeletes: () => ipcRenderer.invoke('collections:pending'),
+  applySteamDeletesNow: () => ipcRenderer.invoke('collections:applyNow'),
+  getLists: () => ipcRenderer.invoke('lists:get'),
+  createList: (name) => ipcRenderer.invoke('lists:create', name),
+  renameList: (id, name) => ipcRenderer.invoke('lists:rename', id, name),
+  deleteList: (id) => ipcRenderer.invoke('lists:delete', id),
+  setListGame: (listId, gameId, member) => ipcRenderer.invoke('lists:setGame', listId, gameId, member),
+  reorderLists: (ids) => ipcRenderer.invoke('lists:reorder', ids),
+  listAccounts: () => ipcRenderer.invoke('accounts:list'),
+  loginAccount: (id) => ipcRenderer.invoke('accounts:login', id),
+  logoutAccount: (id) => ipcRenderer.invoke('accounts:logout', id),
+  syncAccounts: () => ipcRenderer.invoke('accounts:sync'),
+  getVersion: () => ipcRenderer.invoke('app:version'),
+  isStore: () => ipcRenderer.invoke('app:isStore'),
+  checkUpdate: () => ipcRenderer.invoke('update:check'),
+  downloadUpdate: () => ipcRenderer.invoke('update:download'),
+  installUpdate: () => ipcRenderer.invoke('update:install'),
   // main -> renderer progress events during a scan
   onScanProgress: (cb) => {
     const handler = (_e, msg) => cb(msg);
@@ -34,5 +61,35 @@ contextBridge.exposeInMainWorld('arcadia', {
     const handler = (_e, msg) => cb(msg);
     ipcRenderer.on('covers:updated', handler);
     return () => ipcRenderer.removeListener('covers:updated', handler);
+  },
+  // main -> renderer whenever an install's progress changes
+  onDownloads: (cb) => {
+    const handler = (_e, msg) => cb(msg);
+    ipcRenderer.on('downloads:update', handler);
+    return () => ipcRenderer.removeListener('downloads:update', handler);
+  },
+  // main -> renderer after a post-install rescan refreshed the library
+  onLibraryUpdated: (cb) => {
+    const handler = (_e, msg) => cb(msg);
+    ipcRenderer.on('library:updated', handler);
+    return () => ipcRenderer.removeListener('library:updated', handler);
+  },
+  // main -> renderer when queued Steam collection deletions reached Steam
+  onSteamCollectionsDeleted: (cb) => {
+    const handler = (_e, msg) => cb(msg);
+    ipcRenderer.on('collections:steamDeleted', handler);
+    return () => ipcRenderer.removeListener('collections:steamDeleted', handler);
+  },
+  // main -> renderer as Metacritic scores are resolved
+  onRatings: (cb) => {
+    const handler = (_e, msg) => cb(msg);
+    ipcRenderer.on('ratings:update', handler);
+    return () => ipcRenderer.removeListener('ratings:update', handler);
+  },
+  // main -> renderer update lifecycle (checking / available / downloading / downloaded)
+  onUpdateStatus: (cb) => {
+    const handler = (_e, msg) => cb(msg);
+    ipcRenderer.on('update:status', handler);
+    return () => ipcRenderer.removeListener('update:status', handler);
   },
 });

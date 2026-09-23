@@ -400,6 +400,149 @@ html, body {
 
 .hint { font-size: 12px; color: var(--muted); line-height: 1.55; margin-top: 12px; }
 
+/* Draggable lists in the sidebar */
+.nav-list { cursor: grab; }
+.nav-list:active { cursor: grabbing; }
+.nav-list.dragging { opacity: .45; }
+.nav-lists { display: flex; flex-direction: column; }
+/* A wider hit area on the left reads as the drag handle. */
+.nav-list::before {
+  content: ''; position: absolute; left: 3px; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 14px; border-radius: 2px; background: var(--line-2);
+  opacity: 0; transition: opacity .12s;
+}
+.nav-list { position: relative; }
+.nav-list:hover::before { opacity: 1; }
+
+/* Context-menu extras */
+.menu-item .menu-more { margin-left: auto; color: var(--muted); font-size: 15px; line-height: 1; }
+.menu-item .menu-tag {
+  margin-left: auto; font-size: 10px; letter-spacing: .3px; color: var(--muted);
+  border: 1px solid var(--line-2); border-radius: 5px; padding: 1px 5px;
+}
+.menu-item.disabled { opacity: .5; cursor: default; }
+.menu-item.disabled:hover { background: transparent; }
+
+/* Random game picker */
+.modal-narrow { max-width: 420px; }
+/* Height drives the size and width follows from 2:3. The old width:100% with a
+   max-height cap forced a near-square frame (374x380), so object-fit: cover
+   sliced the top and bottom off every portrait cover — logos included. */
+.rnd-art {
+  height: min(420px, 55vh); aspect-ratio: 2 / 3; width: auto; margin: 0 auto;
+  position: relative;
+  border-radius: 12px; overflow: hidden; background: var(--surface-2);
+  display: flex; align-items: center; justify-content: center;
+}
+.rnd-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rnd-art .card-ph { width: 100%; height: 100%; }
+
+/* Art that isn't portrait (a store header, a square logo) would lose most of
+   itself to object-fit: cover in a 2:3 slot. Show it whole instead, over a
+   blurred copy of itself so the slot still looks full. */
+/* Grid: the cover is already absolutely placed above the tile (z 2); only
+   change how it fits, and slide the blur in underneath it. */
+.thumb .cover.wide { object-fit: contain; }
+.thumb .cover-blur { z-index: 1; }
+/* Random picker: the image sits in normal flow, so lift it over the blur. */
+.rnd-art img.wide { object-fit: contain; position: relative; z-index: 1; }
+.rnd-art .cover-blur { z-index: 0; }
+.cover-blur {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  filter: blur(18px) brightness(.55) saturate(1.2); transform: scale(1.15);
+}
+.rnd-title { font-size: 19px; font-weight: 600; text-align: center; margin-top: 16px; line-height: 1.3; }
+.rnd-meta { font-size: 12.5px; color: var(--muted); text-align: center; margin-top: 6px; }
+.rnd-actions { display: flex; gap: 10px; margin-top: 18px; }
+.rnd-actions .btn { flex: 1; justify-content: center; }
+
+/* Linked accounts */
+.acc-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+.acc-row .acc-ico { display: flex; width: 22px; height: 22px; color: var(--muted); flex: none; }
+.acc-row .acc-ico svg { width: 22px; height: 22px; }
+.acc-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.acc-name { font-weight: 500; font-size: 13.5px; }
+.acc-sub { font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acc-row .btn { flex: none; padding: 7px 13px; font-size: 12.5px; }
+
+/* Owned but not installed */
+.card.not-installed .cover,
+.card.not-installed .placeholder { opacity: .42; filter: saturate(.55); transition: opacity .16s, filter .16s; }
+.card.not-installed:hover .cover,
+.card.not-installed:hover .placeholder { opacity: .72; filter: saturate(.8); }
+.card.not-installed .card-title { color: var(--muted); }
+/* Metacritic score — quiet until you hover the card */
+.card-meta {
+  position: absolute; left: 8px; top: 8px; z-index: 3;
+  min-width: 26px; height: 26px; padding: 0 6px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #0b0b0d;
+  background: #8e8e93; box-shadow: 0 2px 8px rgba(0,0,0,.45);
+  opacity: 0; transform: translateY(-4px); transition: opacity .14s, transform .14s;
+  pointer-events: none;
+}
+.card:hover .card-meta { opacity: 1; transform: none; }
+.card-meta.good { background: #66cc33; }
+.card-meta.mixed { background: #ffcc33; }
+.card-meta.bad { background: #ff6874; }
+
+.card-badge {
+  position: absolute; left: 8px; bottom: 8px; z-index: 3;
+  padding: 3px 8px; border-radius: 6px;
+  background: rgba(10,10,12,.82); border: 1px solid var(--line-2);
+  font-size: 10.5px; font-weight: 600; letter-spacing: .3px; color: var(--muted);
+  backdrop-filter: blur(4px);
+}
+
+/* Downloads */
+.tb-btn.tb-downloads { position: relative; }
+.tb-btn.tb-downloads.busy { color: var(--accent); }
+.tb-badge {
+  position: absolute; top: 2px; right: 1px; min-width: 15px; height: 15px;
+  padding: 0 4px; border-radius: 8px; background: var(--accent); color: #fff;
+  font-size: 9.5px; font-weight: 700; line-height: 15px; text-align: center;
+}
+.tb-badge:empty { display: none; }
+
+.dl-row { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.dl-row:last-of-type { border-bottom: none; }
+.dl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.dl-title { font-weight: 500; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dl-pct { font-size: 12.5px; color: var(--accent); font-variant-numeric: tabular-nums; flex: none; }
+.dl-bar { position: relative; height: 5px; border-radius: 3px; background: var(--surface-2); margin-top: 9px; overflow: hidden; }
+.dl-bar > span { display: block; height: 100%; border-radius: 3px; background: var(--accent); transition: width .4s ease; }
+.dl-row.done .dl-bar > span { background: #36d399; }
+.dl-row.failed .dl-bar > span { background: #ff6b6b; }
+.dl-meta { font-size: 11.5px; color: var(--muted); margin-top: 7px; }
+.dl-actions { display: flex; gap: 8px; margin-top: 10px; }
+.btn-small { padding: 6px 11px; font-size: 12px; }
+.btn-danger { color: #ff8b8b; border-color: rgba(255,107,107,.35); }
+.btn-danger:hover { background: rgba(255,107,107,.12); border-color: rgba(255,107,107,.55); }
+
+/* An indeterminate bar: the store gave us no measurable progress. */
+.dl-bar.indeterminate > span,
+.card-progress.indeterminate > span {
+  animation: dl-slide 1.5s ease-in-out infinite;
+  transform-origin: left center;
+}
+@keyframes dl-slide {
+  0% { transform: translateX(-100%) scaleX(.4); }
+  50% { transform: translateX(0) scaleX(.6); }
+  100% { transform: translateX(100%) scaleX(.4); }
+}
+
+/* Live progress on the grid card itself */
+.card-progress {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 4;
+  height: 4px; background: rgba(0,0,0,.55); overflow: hidden;
+}
+.card-progress > span { display: block; height: 100%; background: var(--accent); transition: width .4s ease; }
+
+/* Updates */
+.upd-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.upd-status { font-size: 12.5px; color: var(--text); margin-top: 12px; padding-left: 11px; border-left: 2px solid var(--accent); line-height: 1.5; }
+
 /* Toasts */
 .toasts { position: fixed; bottom: 20px; right: 20px; z-index: 80; display: flex; flex-direction: column; gap: 10px; }
 .toast { background: #17171c; border: 1px solid var(--line-2); border-left: 3px solid var(--accent); border-radius: 10px; padding: 12px 16px; min-width: 220px; max-width: 340px; box-shadow: 0 14px 40px rgba(0,0,0,0.5); font-size: 13.5px; animation: toast-in .25s cubic-bezier(.2,.8,.3,1); }

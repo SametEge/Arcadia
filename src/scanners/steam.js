@@ -118,4 +118,6 @@ async function scanSteam() {
   return games;
 }
 
-module.exports = { scanSteam };
+// getSteamPath/getLibraryFolders are shared with the download watcher, which
+// reads the same appmanifest files to follow an install's progress.
+module.exports = { scanSteam, getSteamPath, getLibraryFolders };

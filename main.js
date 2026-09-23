@@ -12,6 +12,17 @@ const { scanAll } = require('./src/scanners');
 const { launchGame } = require('./src/launcher');
 const { prettify } = require('./src/scanners/util');
 const sgdb = require('./src/sgdb');
+const updater = require('./src/updater');
+const accounts = require('./src/accounts');
+const downloads = require('./src/downloads');
+const { t, setLanguageSource } = require('./src/i18n');
+const ratings = require('./src/ratings');
+const { readCollections, deleteCollections, isSteamRunning } = require('./src/steamcollections');
+const { getSteamPath } = require('./src/scanners/steam');
+const steamAssets = require('./src/steamassets');
+
+// Native dialogs and the tray follow the language chosen in Settings.
+setLanguageSource(() => library.getSettings().language || 'en');
 
 let mainWindow = null;
 let tray = null;
@@ -22,15 +33,6 @@ let isQuitting = false;
 // "Electron"; this aligns the runtime identity with it.
 if (process.platform === 'win32') app.setAppUserModelId('com.arcadia.launcher');
 
-const TRAY_LABELS = {
-  tr: { show: 'Aç', quit: 'Çık', topPlayed: 'En çok oynanan' },
-  en: { show: 'Open', quit: 'Quit', topPlayed: 'Most played' },
-  de: { show: 'Öffnen', quit: 'Beenden', topPlayed: 'Meistgespielt' },
-  ja: { show: '開く', quit: '終了', topPlayed: 'よくプレイ' },
-  ko: { show: '열기', quit: '종료', topPlayed: '많이 플레이' },
-  es: { show: 'Abrir', quit: 'Salir', topPlayed: 'Más jugados' },
-};
-
 function showMainWindow() {
   if (!mainWindow || mainWindow.isDestroyed()) { createWindow(); return; }
   if (mainWindow.isMinimized()) mainWindow.restore();
@@ -40,20 +42,19 @@ function showMainWindow() {
 
 function rebuildTrayMenu() {
   if (!tray) return;
-  const L = TRAY_LABELS[library.getSettings().language] || TRAY_LABELS.en;
   const top = library.getState().games
     .filter((g) => !g.hidden && (g.playCount || 0) > 0)
     .sort((a, b) => (b.playCount || 0) - (a.playCount || 0) || (b.lastPlayed || 0) - (a.lastPlayed || 0))
     .slice(0, 5);
 
-  const template = [{ label: L.show, click: showMainWindow }];
+  const template = [{ label: t('trayShow'), click: showMainWindow }];
   if (top.length) {
-    template.push({ type: 'separator' }, { label: L.topPlayed, enabled: false });
+    template.push({ type: 'separator' }, { label: t('trayTopPlayed'), enabled: false });
     for (const g of top) {
       template.push({ label: g.customTitle || g.title, click: () => launchGameFull(g.id) });
     }
   }
-  template.push({ type: 'separator' }, { label: L.quit, click: () => { isQuitting = true; app.quit(); } });
+  template.push({ type: 'separator' }, { label: t('trayQuit'), click: () => { isQuitting = true; app.quit(); } });
   tray.setContextMenu(Menu.buildFromTemplate(template));
 }
 
@@ -61,6 +62,14 @@ function rebuildTrayMenu() {
 async function launchGameFull(id) {
   const game = library.getGame(id);
   if (!game) return false;
+
+  // Owned but not installed: start the install through the store and follow it
+  // on the downloads screen. Nothing was played, so play stats stay untouched.
+  if (game.installed === false && game.installUrl) {
+    await startInstall(game.id);
+    return 'install';
+  }
+
   await launchGame(game);
   library.updateGame(id, { lastPlayed: Date.now(), playCount: (game.playCount || 0) + 1 });
   for (const cid of game.companions || []) {
@@ -141,7 +150,11 @@ if (!gotLock) {
   app.whenReady().then(() => {
     createWindow();
     createTray();
-    app.setLoginItemSettings({ openAtLogin: !!library.getSettings().autostart });
+    updater.init(mainWindow);
+    updater.checkOnLaunch();
+    // A Store (MSIX) app can't register itself in the Run key; Windows manages
+    // its startup through the package manifest instead.
+    if (!process.windowsStore) app.setLoginItemSettings({ openAtLogin: !!library.getSettings().autostart });
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
       else showMainWindow();
@@ -164,7 +177,12 @@ ipcMain.handle('library:scan', async () => {
     if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('scan:progress', msg);
   };
   const found = await scanAll(settings, onProgress);
-  const result = library.mergeScanned(found);
+  let result = library.mergeScanned(found);
+  // A scan is also the right moment to refresh the linked accounts, so the
+  // grid reflects both what's on disk and what the stores say you own.
+  if (accounts.list().some((a) => a.linked)) {
+    try { result = await syncAccounts(); } catch (err) { console.error('[accounts]', err.message); }
+  }
   rebuildTrayMenu();
   fillCovers(); // fire-and-forget: pull real cover art for non-Steam games
   return result;
@@ -182,17 +200,58 @@ const NOT_A_GAME = /\b(faceit|blitz|wand|mobalytics|tft\s?academy|gankster|r2mod
 // Fetch SteamGridDB cover art for games that lack a real cover (Xbox, launchers,
 // Riot…) and as a fallback for Steam games whose store art is missing. Runs in
 // the background after a scan; Minecraft keeps its hand-drawn tile, tools skipped.
+// Replaces guessed Steam cover URLs with the real ones from Steam's store API.
+// Runs before fillCovers so SteamGridDB is only asked about the few games Steam
+// itself has no portrait art for.
+let steamArtBusy = false;
+async function fillSteamCovers() {
+  if (steamArtBusy) return;
+  steamArtBusy = true;
+  try {
+    const ids = library.getState().games
+      .filter((g) => g.source === 'steam' && /^steam:\d+$/.test(g.id))
+      .map((g) => g.id.slice(6));
+
+    const apply = (batch) => {
+      for (const [appid, art] of Object.entries(batch)) {
+        const g = library.getGame('steam:' + appid);
+        if (!g) continue;
+        const prev = g.steamArt || {};
+        if (prev.cover === art.cover && prev.header === art.header) continue;
+        library.updateGame(g.id, { steamArt: art });
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('covers:updated', { id: g.id, steamArt: art });
+        }
+      }
+    };
+    // Fresh batches land as they arrive (a first run spans ~20 requests); the
+    // final pass picks up whatever came straight from the cache.
+    apply(await steamAssets.resolve(ids, apply));
+  } catch (err) {
+    console.error('[steamassets]', err.message);
+  } finally {
+    steamArtBusy = false;
+  }
+}
+
 let coversBusy = false;
 async function fillCovers() {
   if (coversBusy) return;
+  await fillSteamCovers();
   const key = library.getSettings().sgdbKey || DEFAULT_SGDB_KEY;
   if (!key) return;
   coversBusy = true;
   try {
     for (const g of library.getState().games) {
       if (g.customCover || g.autoCover) continue;
-      // Steam already has art unless it shipped no local cover (e.g. ZZZ → 404).
-      if (g.source === 'steam' && g.localCover) continue;
+      // Steam art comes from the store CDN or the local cache; either way we
+      // already have a URL, and the renderer falls back to header.jpg if it
+      // 404s. Asking SteamGridDB anyway would mean a thousand needless calls on
+      // a linked account — enough to burn the shared key's quota — and every
+      // answer would repaint the grid.
+      // Steam games get their real art from Steam's store API (fillSteamCovers);
+      // only ones Steam has no portrait for come here.
+      if (g.source === 'steam' && (g.localCover || !g.steamArt || g.steamArt.cover)) continue;
       if (/minecraft/i.test(g.title || '') || NOT_A_GAME.test(g.title || '')) continue;
       let url = null;
       try { url = await sgdb.findCover(g.customTitle || g.title, key); } catch { /* skip */ }
@@ -214,11 +273,11 @@ ipcMain.handle('game:remove', (_e, id) => library.removeGame(id));
 
 ipcMain.handle('game:add', async () => {
   const res = await dialog.showOpenDialog(mainWindow, {
-    title: 'Oyun ekle',
+    title: t('addGameTitle'),
     properties: ['openFile'],
     filters: [
-      { name: 'Oyunlar ve kısayollar', extensions: ['exe', 'lnk', 'url', 'bat'] },
-      { name: 'Tüm dosyalar', extensions: ['*'] },
+      { name: t('gamesAndShortcuts'), extensions: ['exe', 'lnk', 'url', 'bat'] },
+      { name: t('allFiles'), extensions: ['*'] },
     ],
   });
   if (res.canceled || !res.filePaths.length) return null;
@@ -239,9 +298,9 @@ ipcMain.handle('game:add', async () => {
 
 ipcMain.handle('game:pickCover', async (_e, id) => {
   const res = await dialog.showOpenDialog(mainWindow, {
-    title: 'Kapak görseli seç',
+    title: t('pickCoverTitle'),
     properties: ['openFile'],
-    filters: [{ name: 'Görseller', extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] }],
+    filters: [{ name: t('images'), extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] }],
   });
   if (res.canceled || !res.filePaths.length) return null;
   const url = pathToFileURL(res.filePaths[0]).href;
@@ -300,9 +359,249 @@ ipcMain.handle('settings:set', (_e, patch) => {
   return s;
 });
 ipcMain.handle('app:setAutostart', (_e, on) => {
+  if (process.windowsStore) return library.getSettings();
   app.setLoginItemSettings({ openAtLogin: !!on });
   return library.setSettings({ autostart: !!on });
 });
+
+/* ----------------------------- Accounts ---------------------------------- */
+
+ipcMain.handle('accounts:list', () => accounts.list());
+
+// The renderer follows a successful link with accounts:sync, so the library
+// fetch happens once, with the progress overlay showing what it is doing.
+ipcMain.handle('accounts:login', (_e, id) => accounts.signIn(id));
+
+ipcMain.handle('accounts:logout', (_e, id) => {
+  accounts.signOut(id);
+  return accounts.list();
+});
+
+// Pull every linked account's library into the store and refresh covers.
+async function syncAccounts() {
+  const onProgress = (id, detail) => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    // "account:epic" or, once a provider reports detail, "account:epic:120/450".
+    let msg = `account:${id}`;
+    if (detail && detail.done) msg += `:${detail.done}${detail.total ? '/' + detail.total : ''}`;
+    mainWindow.webContents.send('scan:progress', msg);
+  };
+  const { games, errors } = await accounts.fetchAll(onProgress);
+  // Only stores that answered successfully may have their stale entries pruned;
+  // a store that failed keeps whatever it last told us.
+  const synced = accounts
+    .list()
+    .filter((a) => a.linked && !errors.some((e) => e.id === a.id))
+    .map((a) => a.id);
+  const result = library.mergeOwned(games, synced);
+  rebuildTrayMenu();
+  fillCovers();
+  return { ...result, errors };
+}
+
+ipcMain.handle('accounts:sync', () => syncAccounts());
+
+/* ---------------------------- Downloads ---------------------------------- */
+
+// True once the game exists on disk — the only completion signal the Microsoft
+// Store gives us, and a useful cross-check for the others.
+function isInstalledNow(id) {
+  const g = library.getGame(id);
+  return !!(g && g.installed !== false && g.installDir && fs.existsSync(g.installDir));
+}
+
+downloads.init({
+  onUpdate: (list) => {
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('downloads:update', list);
+  },
+  // A finished install has real launch data on disk now, so re-scan to pick up
+  // its exe, install folder and local cover art.
+  onComplete: async () => {
+    try {
+      const found = await scanAll(library.getSettings(), () => {});
+      library.mergeScanned(found);
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('library:updated', library.getState());
+      }
+      rebuildTrayMenu();
+      fillCovers();
+    } catch (err) {
+      console.error('[downloads] post-install rescan failed:', err.message);
+    }
+  },
+});
+
+async function startInstall(id) {
+  const game = library.getGame(id);
+  if (!game) throw new Error('unknown-game');
+  if (!game.installUrl) throw new Error('no-install-url');
+  return downloads.install(game, isInstalledNow);
+}
+
+ipcMain.handle('downloads:list', () => downloads.list());
+ipcMain.handle('downloads:install', (_e, id) => startInstall(id));
+ipcMain.handle('downloads:forget', (_e, id) => downloads.forget(id));
+ipcMain.handle('downloads:cancel', (_e, id) => downloads.cancel(id));
+
+/* ----------------------------- Ratings ----------------------------------- */
+
+// Metacritic scores trickle in from Steam's store API; the renderer asks for
+// what it is about to draw and gets the rest pushed as they arrive.
+ratings.init((batch) => {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('ratings:update', batch);
+});
+
+ipcMain.handle('ratings:request', (_e, appids, front) => ratings.request(appids || [], !!front));
+ipcMain.handle('ratings:all', () => ratings.all());
+
+// Steam's own collections, read from the client's local cloud-storage mirror
+// and mirrored into Arcadia's lists. The mirror is one-way by design: Steam's
+// store carries a cloud change-counter and the running client owns it, so
+// writing to it from outside risks losing the user's real collections.
+ipcMain.handle('collections:sync', () => {
+  try {
+    const pending = new Set(library.getSettings().pendingSteamDeletes || []);
+    const found = library.getSettings().steamCollections
+      ? readCollections().filter((c) => !pending.has(c.id)) // deleted here, not yet in Steam
+      : [];
+    return library.syncSteamCollections(found);
+  } catch (err) {
+    console.error('[collections]', err.message);
+    return library.getLists();
+  }
+});
+
+/* ------------------------------- Lists ----------------------------------- */
+
+ipcMain.handle('lists:get', () => library.getLists());
+ipcMain.handle('lists:create', (_e, name) => library.createList(name));
+ipcMain.handle('lists:rename', (_e, id, name) => { library.renameList(id, name); return library.getLists(); });
+// Deleting a Steam-linked list also deletes the collection in Steam. That write
+// can only happen while Steam is closed, so it's queued and applied as soon as
+// it can be — see flushSteamDeletes.
+ipcMain.handle('lists:delete', (_e, id) => {
+  const target = library.getLists().find((l) => l.id === id);
+  const lists = library.deleteList(id);
+  let steam = null;
+  if (target && target.steamId) {
+    const pending = new Set(library.getSettings().pendingSteamDeletes || []);
+    pending.add(target.steamId);
+    library.setSettings({ pendingSteamDeletes: [...pending] });
+    steam = flushSteamDeletes().includes(target.steamId) ? 'applied' : 'pending';
+  }
+  return { lists, steam };
+});
+
+// Applies queued Steam collection deletions if Steam isn't running. Returns the
+// ids that were applied this time.
+function flushSteamDeletes() {
+  const pending = library.getSettings().pendingSteamDeletes || [];
+  if (!pending.length) return [];
+  let res;
+  try {
+    res = deleteCollections(pending, path.join(app.getPath('userData'), 'steam-collection-backups'));
+  } catch (err) {
+    console.error('[collections] delete failed:', err.message);
+    return [];
+  }
+  if (res.applied.length) {
+    library.setSettings({ pendingSteamDeletes: pending.filter((x) => !res.applied.includes(x)) });
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('collections:steamDeleted', res.applied);
+    }
+  }
+  return res.applied;
+}
+
+// Steam's UI helper can outlive steam.exe by a moment and still hold the
+// cloud-storage files, so "closed" means both are gone.
+function steamFullyClosed() {
+  if (isSteamRunning()) return false;
+  try {
+    const out = require('child_process').execSync('tasklist /FI "IMAGENAME eq steamwebhelper.exe" /NH', {
+      encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true,
+    });
+    return !/steamwebhelper\.exe/i.test(out);
+  } catch {
+    return false;
+  }
+}
+
+function waitFor(check, timeoutMs) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const tick = () => {
+      if (check()) return resolve(true);
+      if (Date.now() - start > timeoutMs) return resolve(false);
+      setTimeout(tick, 1000);
+    };
+    tick();
+  });
+}
+
+// "Close Steam and apply": the user asked for it, so shut Steam down through
+// its own -shutdown switch (it saves its state on the way out), write the
+// queued deletions, and start Steam again — which then uploads them.
+// Never called on its own: closing Steam can interrupt a game or a download.
+ipcMain.handle('collections:applyNow', async () => {
+  const pending = library.getSettings().pendingSteamDeletes || [];
+  if (!pending.length) return { applied: [], closed: false, restarted: false };
+
+  const dir = getSteamPath();
+  const exe = dir ? path.join(dir, 'steam.exe') : null;
+  const wasRunning = isSteamRunning();
+
+  if (wasRunning) {
+    if (!exe || !fs.existsSync(exe)) return { error: 'no-steam' };
+    spawn(exe, ['-shutdown'], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
+    // Steam may ask the user to confirm (a game running, a sync in flight);
+    // give it a generous window, and write nothing if it never closes.
+    if (!(await waitFor(steamFullyClosed, 90000))) return { applied: [], closed: false, restarted: false, error: 'steam-busy' };
+  }
+
+  const applied = flushSteamDeletes();
+  let restarted = false;
+  if (wasRunning && exe) {
+    spawn(exe, [], { detached: true, stdio: 'ignore' }).unref();
+    restarted = true;
+  }
+  return { applied, closed: wasRunning, restarted };
+});
+
+ipcMain.handle('collections:pending', () => library.getSettings().pendingSteamDeletes || []);
+
+// Steam is usually open, so check back regularly: the moment it closes, the
+// queued deletions go in, and Steam uploads them on its next start.
+app.whenReady().then(() => {
+  flushSteamDeletes();
+  setInterval(flushSteamDeletes, 15000);
+});
+ipcMain.handle('lists:setGame', (_e, listId, gameId, member) => {
+  library.setListGame(listId, gameId, member);
+  return library.getLists();
+});
+ipcMain.handle('lists:reorder', (_e, orderedIds) => library.reorderLists(orderedIds || []));
+ipcMain.handle('ratings:stats', () => ratings.stats());
+ipcMain.handle('downloads:clear', () => downloads.clearFinished());
+
+// Opens the store client's own window, for anything Arcadia can't drive.
+ipcMain.handle('downloads:openClient', (_e, source) => {
+  const urls = { steam: 'steam://open/downloads', epic: 'com.epicgames.launcher://apps', xbox: 'ms-windows-store://downloadsandupdates' };
+  if (!urls[source]) return false;
+  shell.openExternal(urls[source]);
+  return true;
+});
+
+/* ----------------------------- Updates ----------------------------------- */
+
+// Single source of truth for the version shown in the UI — no hard-coded
+// constant in the renderer that can drift from package.json.
+ipcMain.handle('app:version', () => app.getVersion());
+// True when running as the Microsoft Store (MSIX) build.
+ipcMain.handle('app:isStore', () => !!process.windowsStore);
+ipcMain.handle('update:check', () => updater.check());
+ipcMain.handle('update:download', () => updater.download());
+ipcMain.handle('update:install', () => updater.installNow());
 
 // Update the window + taskbar icon live from a PNG the renderer rendered.
 ipcMain.handle('app:setIcon', (_e, dataUrl) => {
@@ -319,7 +618,7 @@ ipcMain.handle('app:setIcon', (_e, dataUrl) => {
 
 ipcMain.handle('folder:add', async () => {
   const res = await dialog.showOpenDialog(mainWindow, {
-    title: 'Taranacak oyun klasörü seç',
+    title: t('pickFolderTitle'),
     properties: ['openDirectory'],
   });
   if (res.canceled || !res.filePaths.length) return library.getSettings();

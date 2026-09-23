@@ -18,6 +18,10 @@
     </div>
     <div class="titlebar-drag"></div>
     <div class="tb-actions">
+      <button class="tb-btn tb-downloads" id="btn-downloads" data-i18n-title="downloads" aria-label="Downloads" hidden>
+        <span class="ico" data-icon="download"></span>
+        <span class="tb-badge" id="dl-badge"></span>
+      </button>
       <button class="tb-btn tb-close-dc" id="btn-discord-close" data-i18n-title="closeDiscordTip" aria-label="Close Discord" hidden>
         <span class="ico" data-icon="close"></span>
       </button>
@@ -38,6 +42,12 @@
           </button>
           <button class="btn" id="btn-add">
             <span class="ico" data-icon="plus"></span><span data-i18n="addGame"></span>
+          </button>
+          <button class="btn" id="btn-accounts">
+            <span class="ico" data-icon="link"></span><span data-i18n="connectAccounts"></span>
+          </button>
+          <button class="btn" id="btn-random">
+            <span class="ico" data-icon="dice"></span><span data-i18n="randomGame"></span>
           </button>
           <button class="btn btn-ghost" id="btn-settings">
             <span class="ico" data-icon="gear"></span><span data-i18n="settings"></span>
@@ -63,6 +73,7 @@
             <option value="title" data-i18n="sortTitle"></option>
             <option value="recent" data-i18n="sortRecent"></option>
             <option value="played" data-i18n="sortPlayed"></option>
+            <option value="rating" data-i18n="sortRating"></option>
           </select>
         </div>
       </header>
@@ -97,6 +108,39 @@
         <button class="icon-btn" id="settings-close" data-icon="close"></button>
       </div>
       <div class="modal-body" id="settings-body"></div>
+    </div>
+  </div>
+
+  <!-- Random game picker -->
+  <div class="modal-backdrop" id="random-modal" hidden>
+    <div class="modal modal-narrow">
+      <div class="modal-head">
+        <h2 data-i18n="randomTitle"></h2>
+        <button class="icon-btn" id="random-close" data-icon="close"></button>
+      </div>
+      <div class="modal-body" id="random-body"></div>
+    </div>
+  </div>
+
+  <!-- Linked accounts modal -->
+  <div class="modal-backdrop" id="accounts-modal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h2 data-i18n="settingsAccounts"></h2>
+        <button class="icon-btn" id="accounts-close" data-icon="close"></button>
+      </div>
+      <div class="modal-body" id="accounts-body"></div>
+    </div>
+  </div>
+
+  <!-- Downloads modal -->
+  <div class="modal-backdrop" id="downloads-modal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h2 data-i18n="downloads"></h2>
+        <button class="icon-btn" id="downloads-close" data-icon="close"></button>
+      </div>
+      <div class="modal-body" id="downloads-body"></div>
     </div>
   </div>
 
