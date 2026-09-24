@@ -100,7 +100,7 @@ This warning is **normal and expected** — it does **not** mean anything is wro
 
 Windows SmartScreen warns about *any* installer that isn't signed with a **paid** code-signing certificate. Code signing has nothing to do with whether a project is open source; many trustworthy open-source apps show the same warning.
 
-Arcadia is fully open source, so you don't have to take the installer on trust: read the code and [build it yourself](#-build-from-source). Releases are built by [GitHub Actions](.github/workflows/release.yml) straight from the tagged source.
+Arcadia is fully open source, so you don't have to take the installer on trust: read the code and [build it yourself](#-build-from-source). Releases are built straight from the tagged source, normally by [GitHub Actions](.github/workflows/release.yml).
 
 </details>
 
@@ -443,6 +443,8 @@ Releases are cut by the [`release`](.github/workflows/release.yml) workflow:
 The workflow runs the tests, builds the installer, and publishes a GitHub release with the installer, `latest.yml` (read by the auto-updater), the blockmap and `SHA256SUMS.txt`. The release notes come from the matching `CHANGELOG.md` section.
 
 `npm run release` still builds and uploads from your own PC (it needs a `GH_TOKEN`), but the workflow is the preferred route.
+
+`npm run dist` goes through [`build/dist-win.js`](build/dist-win.js), so the installer builds even on a PC where Smart App Control is on: electron-builder normally runs a freshly built helper exe to make the uninstaller, which Smart App Control blocks, and the script switches it to the way that runs nothing.
 
 <details>
 <summary><b>Microsoft Store build</b></summary>

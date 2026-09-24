@@ -13,8 +13,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder",
-    "release": "electron-builder --publish always",
+    "dist": "node build/dist-win.js",
+    "release": "node build/dist-win.js --publish always",
     "test": "node build/test_i18n.js && node build/test_merge.js && node build/test_downloads.js && node build/test_epic_catalog.js && node build/test_lists.js && node build/test_accounts.js && node build/test_steam_delete.js && node build/test_covers.js",
     "test:login": "electron build/test_login_window.js",
     "icon": "py build/make_icon.py",

@@ -100,7 +100,7 @@ Bu uyarı **normal ve beklenen** bir şeydir — Arcadia'da bir sorun olduğu an
 
 Windows SmartScreen, **ücretli** bir kod imzalama sertifikasıyla imzalanmamış *her* kurulum dosyası için uyarır. Kod imzalamanın bir projenin açık kaynak olup olmamasıyla ilgisi yoktur; güvenilir birçok açık kaynak uygulama da aynı uyarıyı gösterir.
 
-Arcadia tamamen açık kaynaktır; kurulum dosyasına körü körüne güvenmek zorunda değilsin: kodu okuyabilir, [kendin derleyebilirsin](#-kaynaktan-derleme). Sürümler, etiketlenmiş kaynaktan doğrudan [GitHub Actions](.github/workflows/release.yml) ile derlenir.
+Arcadia tamamen açık kaynaktır; kurulum dosyasına körü körüne güvenmek zorunda değilsin: kodu okuyabilir, [kendin derleyebilirsin](#-kaynaktan-derleme). Sürümler etiketlenmiş kaynaktan doğrudan derlenir, normalde [GitHub Actions](.github/workflows/release.yml) ile.
 
 </details>
 
@@ -443,6 +443,8 @@ Sürümleri [`release`](.github/workflows/release.yml) iş akışı çıkarır:
 İş akışı testleri çalıştırır, kurulum dosyasını derler ve kurulum dosyası, `latest.yml` (otomatik güncelleyicinin okuduğu dosya), blockmap ve `SHA256SUMS.txt` ile bir GitHub sürümü yayınlar. Sürüm notları `CHANGELOG.md`'deki ilgili bölümden gelir.
 
 `npm run release` hâlâ kendi bilgisayarından derleyip yükler (bir `GH_TOKEN` ister), ama tercih edilen yol iş akışıdır.
+
+`npm run dist` [`build/dist-win.js`](build/dist-win.js) üzerinden çalışır; böylece kurulum dosyası Akıllı Uygulama Denetimi açık bir bilgisayarda da derlenir: electron-builder kaldırıcıyı üretmek için normalde yeni derlenmiş bir yardımcı exe çalıştırır, Akıllı Uygulama Denetimi de bunu engeller; betik bu adımı hiçbir şey çalıştırmayan yola çevirir.
 
 <details>
 <summary><b>Microsoft Store paketi</b></summary>
