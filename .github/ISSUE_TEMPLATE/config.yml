@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/SametEge/Arcadia/security/advisories/new
+    about: Please report security issues privately, not as a public issue.
+  - name: Privacy policy
+    url: https://github.com/SametEge/Arcadia/blob/main/PRIVACY.md
+    about: What Arcadia stores on your PC and who it talks to.

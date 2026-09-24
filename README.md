@@ -6,187 +6,252 @@
 
 **All your games in one beautiful library.**
 
-Arcadia automatically finds your Steam, Epic Games, Xbox / Game Pass and desktop games, shows them with real cover art, and launches any of them with a single click.
+Arcadia finds the games on your PC and the ones you own in Steam, Epic, Xbox, GOG, EA and Ubisoft Connect,<br>
+shows them with real cover art, and launches or installs any of them with a single click.
 
-![platform](https://img.shields.io/badge/platform-Windows-0d9bf0)
-![electron](https://img.shields.io/badge/Electron-42-47848f)
-![license](https://img.shields.io/badge/license-MIT-8b5cff)
+[![Release](https://img.shields.io/github/v/release/SametEge/Arcadia?color=8b5cff&label=release)](https://github.com/SametEge/Arcadia/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/SametEge/Arcadia/total?color=0d9bf0)](https://github.com/SametEge/Arcadia/releases)
+[![CI](https://github.com/SametEge/Arcadia/actions/workflows/ci.yml/badge.svg)](https://github.com/SametEge/Arcadia/actions/workflows/ci.yml)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0d9bf0)
+![Electron](https://img.shields.io/badge/Electron-42-47848f)
+[![License](https://img.shields.io/badge/license-MIT-8b5cff)](LICENSE)
+
+### [⬇ Download the latest release](https://github.com/SametEge/Arcadia/releases/latest)
+
+**English** · [Türkçe](README.tr.md)
+
+<img src="assets/screenshot.png" width="860" alt="Arcadia screenshot" />
 
 </div>
 
 ---
 
+## Contents
+
+- [Features](#-features)
+- [Supported stores](#-supported-stores)
+- [Download & install](#%EF%B8%8F-download--install)
+- [Privacy](#-privacy)
+- [Build from source](#-build-from-source)
+- [How it works](#-how-it-works)
+- [Project structure](#%EF%B8%8F-project-structure)
+- [Contributing](#-contributing)
+- [License](#-license)
+
 ## ✨ Features
 
-- 🔍 **Automatic scanning** — finds Steam, Epic Games, Xbox / Game Pass and desktop-shortcut games on its own, and re-scans silently on every launch (added games appear, uninstalled ones disappear, your data is kept).
-- 🔗 **Link your store accounts** — hit **Link Account** in the sidebar, connect Steam, Epic or Xbox, and the games you *own but haven't installed* join the library too, with their store artwork. You sign in on the store's own page; Arcadia never sees your password, and the session is encrypted with Windows DPAPI.
-- ⬇️ **Install from Arcadia, with a real download screen** — click a game you own and the store starts installing it while Arcadia shows live progress: percentage, speed and time remaining for Steam, state for Epic. When it finishes, the game turns playable on its own.
-- 🔄 **Automatic updates** — new releases install themselves in the background (toggle it off in **Settings → Updates** if you'd rather be asked).
-- 🖼️ **Real cover art** — Steam games come with store covers; for the rest you can add your own free **SteamGridDB** key to fetch real covers. Minecraft ships with hand-drawn cover tiles, and anything without a cover gets a clean branded tile.
-- ▶️ **One-click launch** — click a card and the game starts (Steam protocol, `.exe`, or shortcut).
-- 🟢 **Running indicator & force-close** — a running game is marked live; click the red **×** to close it instantly (and its companion apps with it).
-- 🤝 **Companion apps** — link apps (Discord, FACEIT, overlays…) to a game so they open together.
-- 🗔 **System tray** — keeps running in the background when closed; right-click the tray icon for your most-played games. Optional launch-at-startup.
-- 🎨 **Logo customization** — change the accent color and the logo (color / shape / symbol); the Windows taskbar icon updates live.
-- ⭐ **Favorites, search & sorting** — A→Z, recently added, recently played.
-- 🌍 **Multilingual** — 6 languages, auto-detected from your PC.
-- 🌙 **Minimalist dark UI** — cover grid, smooth hover effects, frameless window.
+**Your whole library, found for you**
 
-## 🌐 Language support
+- 🔍 **Automatic scanning** — Steam, Epic Games, Xbox / Game Pass, GOG, EA app, Ubisoft Connect, Riot (VALORANT, League of Legends) and desktop shortcuts, plus any folders you add. A silent re-scan on every launch adds new games and drops uninstalled ones while keeping your data.
+- 🔗 **Linked store accounts** — hit **Link Account**, sign in to Steam, Epic, Xbox, GOG, EA or Ubisoft Connect, and the games you *own but haven't installed* join the library with their store artwork. A game that shows up in several stores stays a single entry.
+- 🖼️ **Real cover art** — Steam games use the store's own capsules; everything else is looked up on **SteamGridDB**. Minecraft ships with hand-drawn tiles, and anything left gets a clean branded tile. You can always pick your own image.
 
-Arcadia ships in **6 languages** and picks one automatically from your Windows locale (you can change it any time in **Settings → Language**):
+**Play and install**
 
-| Language | | Language | |
-|---|---|---|---|
-| 🇹🇷 Türkçe | Turkish | 🇯🇵 日本語 | Japanese |
-| 🇬🇧 English | English | 🇰🇷 한국어 | Korean |
-| 🇩🇪 Deutsch | German | 🇪🇸 Español | Spanish |
+- ▶️ **One-click launch** — through the store's own protocol (so overlays, cloud saves and DRM keep working) or straight from the `.exe`.
+- ⬇️ **Install from Arcadia** — click a game you own and the store's client starts installing it while Arcadia's download panel shows live progress: percentage, speed and time left for Steam. When it finishes, the card turns playable on its own.
+- 🟢 **Running indicator & force-close** — a running game is marked live; the red **×** closes it (and its companion apps) instantly.
+- 🤝 **Launch together** — link Discord, FACEIT, overlays… to a game so they open with it. Discord has its own quick button in the sidebar.
 
-Auto-detect: Turkish/Azerbaijani → Turkish, German → German, Japanese → Japanese, Korean → Korean, Spanish → Spanish, everything else → English.
+**Organise**
 
-## 📸 Screenshot
+- 📚 **Lists** — make your own lists with drag-and-drop ordering. Your **Steam collections** can be imported too, and deleting one from Arcadia deletes it in Steam.
+- ⭐ **Favorites, categories & search** — installed / not installed, per-store views, sorting by name, recently added, recently played or **Metacritic** score.
+- 🎲 **Random game** — can't decide? Let Arcadia pick.
 
-<div align="center">
-<img src="assets/screenshot.png" width="860" alt="Arcadia screenshot" />
-</div>
+**Feels like yours**
 
-## ⬇️ Download & Install
+- 🎨 **Accent color & logo** — change the color, shape and symbol of the logo; the Windows taskbar icon updates live.
+- 🌍 **6 languages** — auto-detected from Windows, switchable any time.
+- 🗔 **System tray** — keeps running in the background with your most-played games one right-click away. Optional launch at startup.
+- 🔄 **Automatic updates** — new releases download in the background and install the next time you quit (**Settings → Updates** to be asked instead).
+- 🌙 **Minimalist dark UI** — cover grid, smooth hover effects, frameless window, first-run tour.
 
-1. Download the latest **`Arcadia-Setup-*.exe`** from the [Releases](../../releases) page.
+## 🎮 Supported stores
+
+| Store | Installed games | Linked account | Install from Arcadia | Download progress |
+|---|:---:|:---:|:---:|---|
+| **Steam** | ✅ | ✅ | ✅ | percentage, speed, time left |
+| **Epic Games** | ✅ | ✅ | ✅ | percentage when the size is known, otherwise state |
+| **Xbox / Game Pass** | ✅ | ✅ PC titles | ✅ via Microsoft Store | when finished |
+| **GOG** | ✅ | ✅ | ✅ via GOG Galaxy | when finished |
+| **EA app** | ✅ | ✅ | ✅ | when finished |
+| **Ubisoft Connect** | ✅ | ✅ games played at least once¹ | ✅ | when finished |
+| **Riot Games** | ✅ | — | — | — |
+| **Shortcuts, folders, manual** | ✅ | — | — | — |
+
+¹ Ubisoft only lets its own launcher read the full ownership list; the web API Arcadia uses lists the games you've launched.
+
+No store offers an API that lets another app download a game, so Arcadia asks the store's own client to install it — the same hand-off Playnite makes — and follows the progress from there.
+
+## ⬇️ Download & install
+
+1. Download the latest **`Arcadia-Setup-<version>.exe`** from [Releases](https://github.com/SametEge/Arcadia/releases/latest).
 2. Run it (see the SmartScreen note below).
-3. Follow the installer — Arcadia adds Start-menu and desktop shortcuts and opens automatically, then scans your games.
+3. Follow the installer — Arcadia adds Start-menu and desktop shortcuts, opens, and scans your games.
+
+Releases built by the release workflow also carry a `SHA256SUMS.txt`, so you can check the file you downloaded:
+
+```powershell
+Get-FileHash .\Arcadia-Setup-<version>.exe -Algorithm SHA256
+```
 
 > Uninstalling keeps your library and settings (they live in `%APPDATA%\Arcadia`).
 
-### ⚠️ "Windows protected your PC" (SmartScreen)?
+<details>
+<summary><b>⚠️ "Windows protected your PC" (SmartScreen)?</b></summary>
+
+<br>
 
 This warning is **normal and expected** — it does **not** mean anything is wrong with Arcadia. To continue:
 
 > **More info → Run anyway**
 
-**Why it appears:** Windows SmartScreen warns about *any* installer that isn't signed with a **paid** code-signing certificate from a Certificate Authority. Code signing is **unrelated to whether a project is open source** — many trustworthy open-source apps show the exact same warning until their author buys a certificate.
+Windows SmartScreen warns about *any* installer that isn't signed with a **paid** code-signing certificate. Code signing has nothing to do with whether a project is open source — many trustworthy open-source apps show the same warning.
 
-Because Arcadia is fully open source, you don't have to take the prebuilt installer on trust — you can **read every line of the code and [build it yourself](#-build-from-source)**; the result is identical. Signed, warning-free releases will follow if the project gets a code-signing certificate.
+Arcadia is fully open source, so you don't have to take the installer on trust: read the code and [build it yourself](#-build-from-source). New releases are built by [GitHub Actions](.github/workflows/release.yml) straight from the tagged source. A Microsoft Store version — signed by Microsoft, so no warning at all — is on the way.
 
-## 🖼️ Cover art (optional SteamGridDB key)
+</details>
 
-Steam games already have covers. To fetch real covers for non-Steam games (Valorant, League of Legends, etc.), add your own **free** SteamGridDB key:
+### Cover art (SteamGridDB)
 
-**Settings → Cover Art (SteamGridDB)** → paste your key.
+Covers for non-Steam games work out of the box through a shared SteamGridDB key. That key is public and shared by every Arcadia user, so it can hit rate limits; for reliable covers add your own **free** key:
 
-Get a free key at [steamgriddb.com](https://www.steamgriddb.com) → *Preferences → API*. The key is stored locally on your machine only and is never shared.
+1. [steamgriddb.com](https://www.steamgriddb.com) → *Preferences → API* → copy your key.
+2. Arcadia → **Settings → Cover Art (SteamGridDB)** → paste it and rescan.
+
+Your key is stored only on your PC.
+
+## 🔒 Privacy
+
+**Arcadia has no server. There is no telemetry, no analytics and no advertising.** Everything it knows stays on your PC. It talks directly to the stores you use, to SteamGridDB for covers and to GitHub for updates — never to a server of ours.
+
+- You sign in on each **store's own page** — Arcadia never sees or stores your password.
+- Store sessions are kept in `%APPDATA%\Arcadia\accounts.dat`, encrypted with Windows DPAPI so only your Windows account can read them.
+
+The full policy is in [`PRIVACY.md`](PRIVACY.md).
 
 ## 🚀 Build from source
 
-Requirements: [Node.js](https://nodejs.org) 18+
+Requirements: **Windows 10/11** and [Node.js](https://nodejs.org) 18 or newer. The tests also run on Linux and macOS.
 
 ```bash
-# Install dependencies
+git clone https://github.com/SametEge/Arcadia.git
+cd Arcadia
 npm install
 
-# Run the app
-npm start
-
-# Run the headless tests (i18n completeness, library merge, download tracking)
-npm test
-
-# Run the account login-window test (opens real windows, needs Electron)
-npm run test:login
-
-# Build the Windows installer (output in dist/)
-npm run dist
-
-# Build and publish a release to GitHub (needs GH_TOKEN)
-npm run release
-
-# Build the Microsoft Store package (dist/Arcadia-<version>-Store.appx)
-npm run dist:store
+npm start           # run the app
+npm test            # headless tests (i18n, library merge, downloads, lists, accounts, covers…)
+npm run test:login  # account sign-in window test (opens real windows)
+npm run dist        # build the installer into dist/
+npm run dist:store  # build the Microsoft Store package (dist/Arcadia-<version>-Store.appx)
 ```
 
-### Microsoft Store build
+### Releasing
 
-The Store package is signed by Microsoft during certification, so it installs
-without SmartScreen or Smart App Control warnings — the same effect as a paid
-code-signing certificate, for free. Before building a package to upload:
+Releases are cut by the [`release`](.github/workflows/release.yml) workflow:
 
-1. The Store name is **Arcadia Launcher** (Store ID `9N22381XP9S9`); its
-   Partner Center identity is already in `build.appx` in `package.json`.
-   `displayName` there has to stay exactly the reserved name.
-2. `npm run dist:store` — it uses the Windows SDK installed on the PC (the tools
-   electron-builder downloads either fail on Windows 11 or are blocked by Smart
-   App Control). Tile images come from `build/appx`, regenerated by `npm run icon`.
-3. Upload the `.appx`. Listing text, the `runFullTrust` justification and notes
-   for certification are drafted in [`store/LISTING.md`](store/LISTING.md);
-   the privacy policy is [`PRIVACY.md`](PRIVACY.md).
+1. Bump `version` in `package.json` and move the **Unreleased** notes in [`CHANGELOG.md`](CHANGELOG.md) under a new `## [x.y.z]` heading.
+2. Commit, then tag and push: `git tag v1.1.0 && git push origin v1.1.0`.
 
-In the Store build Arcadia's own updater is switched off — Store apps are
-updated by the Store — and launch-at-startup is left to Windows.
+The workflow runs the tests, builds the installer, and publishes a GitHub release with the installer, `latest.yml` (read by the auto-updater), the blockmap and `SHA256SUMS.txt`. The release notes come from the matching `CHANGELOG.md` section.
 
-> Auto-update reads the `latest.yml` that `npm run release` uploads next to the
-> installer, so it takes effect from the first release published that way
-> onwards — and only in an installed build, not under `npm start`.
+`npm run release` still builds and uploads from your own PC (needs a `GH_TOKEN`), but the workflow is the preferred route.
 
-## 🧩 How it works
+<details>
+<summary><b>Microsoft Store build</b></summary>
 
-| Source | How it's found | How it launches |
-|--------|----------------|-----------------|
-| **Steam** | reads `libraryfolders.vdf` + `appmanifest_*.acf` | `steam://rungameid/<appid>` |
-| **Epic** | `ProgramData\Epic\...\Manifests\*.item` | `com.epicgames.launcher://` deep-link |
-| **Xbox** | main `.exe` under `XboxGames\<Game>\Content\` | direct `.exe` |
-| **Shortcuts** | desktop `.lnk` / `.exe` (game clients & launchers) | the shortcut |
-| **Folders** | `.exe` files in folders you add | direct `.exe` |
-| **Manual** | a `.exe` / `.lnk` / `.url` you pick via "Add game" | opens the file |
+<br>
 
-Linked accounts add everything you own on top of that:
+The Store package is signed by Microsoft during certification, so it installs without SmartScreen or Smart App Control warnings — the same effect as a paid code-signing certificate, for free.
 
-| Account | Library comes from | Install progress Arcadia can show |
-|---------|--------------------|-----------------------------------|
-| **Steam** | `IPlayerService/GetOwnedGames` via the token the store page hands your session — no API key to create | percentage, speed and ETA, read from `appmanifest_*.acf` |
-| **Epic** | the launcher's OAuth library API, DLC and soundtracks filtered out | downloading / installed |
-| **Xbox** | `titlehub` title history, limited to titles playable on PC | finished only — the Microsoft Store reports nothing |
+1. The Store name is **Arcadia Launcher** (Store ID `9N22381XP9S9`); its Partner Center identity is already in `build.appx` in `package.json`. `displayName` there has to stay exactly the reserved name.
+2. `npm run dist:store` uses the Windows SDK installed on the PC (the tools electron-builder downloads either fail on Windows 11 or are blocked by Smart App Control). Tile images come from `build/appx`, regenerated by `npm run icon`.
+3. Upload the `.appx`. Listing text, the `runFullTrust` justification and certification notes are drafted in [`store/LISTING.md`](store/LISTING.md); the privacy policy is [`PRIVACY.md`](PRIVACY.md).
 
-> No store offers an API that lets another app download a game, so Arcadia asks
-> the store's own client to install it (the same hand-off Playnite makes) and
-> follows the progress from there.
+In the Store build Arcadia's own updater is switched off — Store apps are updated by the Store — and launch at startup is left to Windows.
 
-Library and settings are stored in `%APPDATA%\Arcadia\library.json`. Store
-sessions live separately in `%APPDATA%\Arcadia\accounts.dat`, encrypted for your
-Windows account — they are never written into `library.json`.
+</details>
 
-## 🗂️ Project structure
+<details>
+<summary><b>Regenerating the icon</b></summary>
 
-```
-arcadia/
-├── main.js              # Electron main process + IPC, tray, icon
-├── preload.js           # Secure renderer bridge
-├── src/
-│   ├── library.js       # Library & settings store (installed + owned merge)
-│   ├── launcher.js      # Game launching
-│   ├── downloads.js     # Install hand-off + progress tracking
-│   ├── updater.js       # GitHub release auto-update
-│   ├── i18n.js          # Strings the main process owns (dialogs, tray)
-│   ├── vdf.js           # Steam VDF/ACF parser
-│   ├── sgdb.js          # SteamGridDB cover lookup
-│   ├── accounts/        # steam, epic, xbox account linking + token store
-│   └── scanners/        # steam, epic, xbox, riot, folders, shortcuts
-├── renderer/            # UI (HTML / CSS / JS)
-├── assets/              # Logo, icons, screenshot
-└── build/
-    ├── make_icon.py     # Generates the app icon from the logo
-    └── test_*.js        # Headless tests (npm test)
-```
+<br>
 
-Adding another store means one file in `src/accounts/` exporting
-`{ id, signIn, signOut, status, fetchLibrary }`, listed in `src/accounts/index.js`.
-
-## 🛠️ Regenerating the icon
-
-The logo lives in `assets/logo.svg`. To regenerate the PNG/ICO versions (Python + Pillow):
+The logo lives in `assets/logo.svg`. To regenerate the PNG/ICO files and the Store tiles (Python + Pillow):
 
 ```bash
 npm run icon   # or: py build/make_icon.py
 ```
 
+</details>
+
+## 🧩 How it works
+
+| Source | How it's found | How it launches |
+|--------|----------------|-----------------|
+| **Steam** | `libraryfolders.vdf` + `appmanifest_*.acf` | `steam://rungameid/<appid>` |
+| **Epic** | `ProgramData\Epic\…\Manifests\*.item` | `com.epicgames.launcher://` deep link |
+| **Xbox** | main `.exe` under `XboxGames\<Game>\Content\` | the `.exe` |
+| **GOG** | `HKLM\…\GOG.com\Games` | GOG Galaxy, or the `.exe` (GOG games are DRM-free) |
+| **EA app** | `.mfst` manifests under `ProgramData\EA Desktop` / `Origin` | `origin2://` |
+| **Ubisoft Connect** | `HKLM\…\Ubisoft\Launcher\Installs` | `uplay://launch/<id>` |
+| **Riot** | `ProgramData\Riot Games\RiotClientInstalls.json` | the Riot Client with `--launch-product` |
+| **Shortcuts** | desktop `.lnk` / `.exe` of game clients and launchers | the shortcut |
+| **Folders** | `.exe` files in folders you add | the `.exe` |
+| **Manual** | a `.exe` / `.lnk` / `.url` you pick via **Add Game** | the file |
+
+Linked accounts add what you own on top of that:
+
+| Account | Library comes from |
+|---------|--------------------|
+| **Steam** | `IPlayerService/GetOwnedGames`, with the token the store page gives your session — no API key to create |
+| **Epic** | the launcher's OAuth library API, DLC and soundtracks filtered out |
+| **Xbox** | `titlehub` title history, limited to titles playable on PC |
+| **GOG** | gog.com's account library, read through your gog.com session |
+| **EA** | the EA app's own GraphQL service, with a short-lived token from your EA session |
+| **Ubisoft** | the Ubisoft Connect web app's played-games list |
+
+Your library and settings are stored in `%APPDATA%\Arcadia\library.json`; store sessions live separately in the encrypted `accounts.dat` and are never written into `library.json`.
+
+## 🗂️ Project structure
+
+```
+Arcadia/
+├── main.js                 # Electron main process: window, IPC, tray, icon
+├── preload.js              # Secure bridge between the UI and the main process
+├── renderer/               # UI (HTML / CSS / JS, with its own 6-language dictionary)
+├── src/
+│   ├── library.js          # Library & settings store (installed + owned merge, lists)
+│   ├── launcher.js         # Game launching
+│   ├── downloads.js        # Install hand-off + progress tracking
+│   ├── updater.js          # Auto-update from GitHub releases
+│   ├── ratings.js          # Metacritic scores (cached, fetched in the background)
+│   ├── steamassets.js      # Steam cover art
+│   ├── steamcollections.js # Steam collections: read and delete
+│   ├── sgdb.js             # SteamGridDB cover lookup
+│   ├── vdf.js              # Steam VDF/ACF parser
+│   ├── i18n.js             # Strings the main process owns (dialogs, tray)
+│   ├── accounts/           # steam, epic, xbox, gog, ea, ubisoft + encrypted token store
+│   └── scanners/           # steam, epic, xbox, gog, ea, ubisoft, riot, shortcuts, folders
+├── assets/                 # Logo, icons, screenshot
+├── build/
+│   ├── appx/               # Microsoft Store tile images
+│   ├── make_icon.py        # Generates the app icon from the logo
+│   ├── dist-store.js       # Microsoft Store package build
+│   └── test_*.js           # Headless tests (npm test)
+├── store/LISTING.md        # Microsoft Store listing drafts
+└── .github/                # CI, release workflow, issue and PR templates
+```
+
+Adding another store means one file in `src/accounts/` exporting `{ id, signIn, signOut, status, fetchLibrary }`, listed in `src/accounts/index.js`, and a scanner in `src/scanners/`.
+
+## 🤝 Contributing
+
+Bug reports, ideas and pull requests are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md). Found a security issue? Please report it privately as described in [`SECURITY.md`](SECURITY.md).
+
 ## 📄 License
 
 [MIT](LICENSE) © 2026 Samet Ege
+
+Arcadia is not affiliated with Valve, Epic Games, Microsoft, CD PROJEKT, Electronic Arts, Ubisoft or Riot Games. Game names, cover art and store logos belong to their respective owners.

@@ -1,0 +1,21 @@
+name: Feature request
+description: Suggest an idea or a store Arcadia should support
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like Arcadia to do?
+      description: Describe the problem or the idea — what you're trying to do matters more than how.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: How do you handle it today?
+      description: A workaround, another launcher that does it, or nothing yet.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Mockups, links, examples.

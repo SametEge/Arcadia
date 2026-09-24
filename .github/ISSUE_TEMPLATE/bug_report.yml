@@ -1,0 +1,87 @@
+name: Bug report
+description: Something in Arcadia doesn't work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. Please check the [open issues](https://github.com/SametEge/Arcadia/issues) first — it may already be known.
+
+        **Never paste passwords, session cookies or the contents of `accounts.dat` here.**
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+      placeholder: I linked my Epic account and clicked Refresh Library, but…
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Settings → Linked Accounts
+        2. …
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Game scanning / detection
+        - Linked accounts
+        - Installing / downloads
+        - Launching / running games
+        - Cover art
+        - Lists / Steam collections
+        - Updates
+        - Installer
+        - UI / translations
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: store
+    attributes:
+      label: Store involved
+      multiple: true
+      options:
+        - Steam
+        - Epic Games
+        - Xbox / Game Pass
+        - GOG
+        - EA app
+        - Ubisoft Connect
+        - Riot Games
+        - Shortcut / folder / manual
+        - None
+  - type: input
+    id: version
+    attributes:
+      label: Arcadia version
+      description: Shown in Settings → About.
+      placeholder: 1.0.2
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Installed from
+      options:
+        - GitHub release (installer)
+        - Microsoft Store
+        - Built from source
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or logs
+      description: Anything else that helps — screenshots, error messages. Blur game or account names you'd rather not share.
