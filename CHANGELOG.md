@@ -10,6 +10,8 @@ before tagging a release, move the **Unreleased** notes under a new
 
 ## [Unreleased]
 
+## [1.0.3] — 2026-09-24
+
 ### Added
 
 - **Linked store accounts** — link Steam, Epic Games, Xbox, GOG, EA and Ubisoft
@@ -30,7 +32,8 @@ before tagging a release, move the **Unreleased** notes under a new
 - Real store logos, a redrawn app icon, and Steam covers taken from the
   store's own assets.
 - **Microsoft Store** package ("Arcadia Launcher") via `npm run dist:store`,
-  with tile assets, a [privacy policy](PRIVACY.md) and listing drafts.
+  in all six languages, with tile assets, a [privacy policy](PRIVACY.md) and
+  listing texts for every language.
 - Headless test suite under `build/` (`npm test`).
 
 ### Project
@@ -40,10 +43,15 @@ before tagging a release, move the **Unreleased** notes under a new
   release notes from this file and a `SHA256SUMS.txt`.
 - Issue and pull request templates, contributing guide, security policy and
   Dependabot updates.
+- A much more detailed README, in English and Turkish, with new screenshots.
+- `electron . --store-shots` renders the Store and README screenshots for
+  every language.
 
 ### Removed
 
 - The dead `src/src` copy of the sources.
+- The `--shot` helper and the old README screenshot, which was packaged into
+  the app for nothing.
 
 ## [1.0.2] — 2026-06-22
 
@@ -90,7 +98,8 @@ First release.
   한국어, Español.
 - Minimalist dark UI.
 
-[Unreleased]: https://github.com/SametEge/Arcadia/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/SametEge/Arcadia/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/SametEge/Arcadia/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/SametEge/Arcadia/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/SametEge/Arcadia/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/SametEge/Arcadia/releases/tag/v1.0.0

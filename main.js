@@ -119,7 +119,6 @@ function createWindow() {
     // The Store shots render in their own offscreen window; this one stays hidden.
     if (process.argv.includes('--store-shots')) { storeShotsAndQuit(); return; }
     mainWindow.show();
-    if (process.argv.includes('--shot')) captureAndQuit();
   });
 
   // Close to tray: keep running in the background instead of quitting.
@@ -128,22 +127,9 @@ function createWindow() {
   });
 }
 
-// Dev helper: `electron . --shot` saves a screenshot for the README, then exits.
-async function captureAndQuit() {
-  try {
-    await new Promise((r) => setTimeout(r, 7000)); // give the scan + store covers time to load
-    const img = await mainWindow.webContents.capturePage();
-    fs.writeFileSync(path.join(__dirname, 'assets', 'screenshot.png'), img.toPNG());
-    console.log('SHOT_SAVED');
-  } catch (err) {
-    console.error('SHOT_FAILED', err);
-  } finally {
-    app.quit();
-  }
-}
-
-// Dev helper: `electron . --store-shots` saves the Microsoft Store screenshots
-// (build/store-shots.js), then exits. build/ isn't packaged, so source only.
+// Dev helper: `electron . --store-shots` saves the Microsoft Store (and README)
+// screenshots (build/store-shots.js), then exits. build/ isn't packaged, so
+// source only.
 async function storeShotsAndQuit() {
   try {
     await require('./build/store-shots')(mainWindow);
