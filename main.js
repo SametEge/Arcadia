@@ -116,6 +116,8 @@ function createWindow() {
   Menu.setApplicationMenu(null);
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
   mainWindow.once('ready-to-show', () => {
+    // The Store shots render in their own offscreen window; this one stays hidden.
+    if (process.argv.includes('--store-shots')) { storeShotsAndQuit(); return; }
     mainWindow.show();
     if (process.argv.includes('--shot')) captureAndQuit();
   });
@@ -135,6 +137,19 @@ async function captureAndQuit() {
     console.log('SHOT_SAVED');
   } catch (err) {
     console.error('SHOT_FAILED', err);
+  } finally {
+    app.quit();
+  }
+}
+
+// Dev helper: `electron . --store-shots` saves the Microsoft Store screenshots
+// (build/store-shots.js), then exits. build/ isn't packaged, so source only.
+async function storeShotsAndQuit() {
+  try {
+    await require('./build/store-shots')(mainWindow);
+    console.log('STORE_SHOTS_SAVED');
+  } catch (err) {
+    console.error('STORE_SHOTS_FAILED', err);
   } finally {
     app.quit();
   }
