@@ -3,7 +3,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFile } = require('child_process');
 const { pathToFileURL } = require('url');
 const { prettify } = require('./util');
 
@@ -55,8 +55,21 @@ function cleanName(file) {
   );
 }
 
+// PowerShell asynchronously: this runs in the main process, and waiting on it
+// synchronously froze the window for as long as PowerShell took to start.
+function powershell(command) {
+  return new Promise((resolve, reject) => {
+    execFile(
+      'powershell',
+      ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', command],
+      { encoding: 'utf8', windowsHide: true, maxBuffer: 16 * 1024 * 1024 },
+      (err, out) => (err ? reject(err) : resolve(out))
+    );
+  });
+}
+
 // Resolve many .lnk files at once -> { lnkLower: { target, args, icon } }.
-function resolveShortcuts(lnkPaths) {
+async function resolveShortcuts(lnkPaths) {
   const map = {};
   if (!lnkPaths.length) return map;
   const tmp = path.join(os.tmpdir(), `arcadia_lnk_${Date.now()}.txt`);
@@ -69,11 +82,7 @@ function resolveShortcuts(lnkPaths) {
       `$s = $sh.CreateShortcut($_); ` +
       `[Console]::Out.WriteLine($_ + '<|>' + $s.TargetPath + '<|>' + $s.Arguments + '<|>' + $s.IconLocation) ` +
       `} catch {} } }`;
-    const out = execFileSync(
-      'powershell',
-      ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', ps],
-      { encoding: 'utf8', windowsHide: true }
-    );
+    const out = await powershell(ps);
     for (const line of out.split(/\r?\n/)) {
       const p = line.split('<|>');
       if (p.length >= 2 && p[1]) {
@@ -148,7 +157,7 @@ async function scanShortcuts(knownTitles = new Set()) {
     }
   }
 
-  const resolved = resolveShortcuts(candidates.filter((c) => c.ext === '.lnk').map((c) => c.full));
+  const resolved = await resolveShortcuts(candidates.filter((c) => c.ext === '.lnk').map((c) => c.full));
 
   const games = [];
   const seenTarget = new Set();

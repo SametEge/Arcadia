@@ -9,24 +9,14 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
-const { prettify } = require('./util');
+const { prettify, regTree, regValue } = require('./util');
 
 const INSTALLS_KEY = 'HKLM\\SOFTWARE\\WOW6432Node\\Ubisoft\\Launcher\\Installs';
 const LAUNCHER_KEY = 'HKLM\\SOFTWARE\\WOW6432Node\\Ubisoft\\Launcher';
 
-function regQuery(key, args = '') {
-  try {
-    return execSync(`reg query "${key}" ${args}`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-  } catch {
-    return '';
-  }
-}
-
-function launcherDir() {
-  const out = regQuery(LAUNCHER_KEY, '/v InstallDir');
-  const m = out.match(/InstallDir\s+REG_SZ\s+(.+)/i);
-  return m ? path.normalize(m[1].trim()) : null;
+async function launcherDir() {
+  const dir = await regValue(LAUNCHER_KEY, 'InstallDir');
+  return dir ? path.normalize(dir) : null;
 }
 
 // The install folder's name is the best title Ubisoft gives us locally; the
@@ -57,23 +47,20 @@ function mainExe(dir) {
 }
 
 async function scanUbisoft() {
-  const out = regQuery(INSTALLS_KEY);
-  if (!out) return [];
+  const tree = await regTree(INSTALLS_KEY);
+  if (!tree.size) return [];
 
   const games = [];
   const seen = new Set();
 
-  for (const line of out.split(/\r?\n/)) {
-    const m = line.match(/\\Installs\\(\d+)\s*$/);
+  for (const [key, info] of tree) {
+    const m = key.match(/\\Installs\\(\d+)$/i);
     if (!m) continue;
     const id = m[1];
     if (seen.has(id)) continue;
+    if (!info.installdir) continue;
 
-    const info = regQuery(`${INSTALLS_KEY}\\${id}`, '/v InstallDir');
-    const dm = info.match(/InstallDir\s+REG_SZ\s+(.+)/i);
-    if (!dm) continue;
-
-    const dir = path.normalize(dm[1].trim());
+    const dir = path.normalize(info.installdir);
     if (!fs.existsSync(dir)) continue; // registered but uninstalled
     seen.add(id);
 

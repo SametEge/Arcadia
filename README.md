@@ -16,7 +16,9 @@ shows them with real cover art, and launches — or installs — any of them wit
 ![Electron](https://img.shields.io/badge/Electron-42-47848f)
 [![License](https://img.shields.io/badge/license-MIT-8b5cff)](LICENSE)
 
-### [⬇ Download the latest release](https://github.com/SametEge/Arcadia/releases/latest)
+<a href="https://apps.microsoft.com/detail/9N22381XP9S9?mode=direct"><img src="https://get.microsoft.com/images/en-us%20dark.svg" width="240" alt="Get it from Microsoft" /></a>
+
+<sub>or download the installer from <a href="https://github.com/SametEge/Arcadia/releases/latest">GitHub Releases</a></sub>
 
 **English** · [Türkçe](README.tr.md)
 
@@ -77,56 +79,30 @@ shows them with real cover art, and launches — or installs — any of them wit
 - About **400 MB** of free disk space
 - The store clients you use (Steam, Epic Games Launcher, EA app, GOG Galaxy, Ubisoft Connect, Microsoft Store). Arcadia starts and installs games *through* them, so a game's store still has to be installed to play it.
 
-### Installer
+### Microsoft Store (recommended)
+
+<a href="https://apps.microsoft.com/detail/9N22381XP9S9?mode=direct"><img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200" alt="Get it from Microsoft" /></a>
+
+Arcadia is on the Microsoft Store as **[Arcadia Launcher](https://apps.microsoft.com/detail/9N22381XP9S9)**. Microsoft signs the Store version, so it installs with one click and no SmartScreen or Smart App Control warning, and the Store keeps it up to date.
+
+### Installer from GitHub
 
 1. Download the latest **`Arcadia-Setup-<version>.exe`** from [Releases](https://github.com/SametEge/Arcadia/releases/latest).
-2. Run it. Windows may warn you first — see the two notes below.
-3. Choose where to install. Arcadia installs for your Windows account only, so it doesn't need administrator rights. It adds Start-menu and desktop shortcuts, opens, and scans your games.
+2. Run it and choose where to install. Arcadia installs for your Windows account only, so it doesn't need administrator rights. It adds Start-menu and desktop shortcuts, opens, and scans your games.
 
-Releases built by the release workflow come with a `SHA256SUMS.txt`, so you can check the file you downloaded:
+This installer isn't signed like the Store version, so Windows SmartScreen may ask you to confirm it (**More info → Run anyway**), and PCs with Smart App Control turned on block it — use the Microsoft Store version there.
+
+Each release comes with a `SHA256SUMS.txt`, so you can check the file you downloaded:
 
 ```powershell
 Get-FileHash .\Arcadia-Setup-<version>.exe -Algorithm SHA256
 ```
 
-<details>
-<summary><b>⚠️ "Windows protected your PC" (SmartScreen)</b></summary>
-
-<br>
-
-This warning is **normal and expected** — it does **not** mean anything is wrong with Arcadia. To continue:
-
-> **More info → Run anyway**
-
-Windows SmartScreen warns about *any* installer that isn't signed with a **paid** code-signing certificate. Code signing has nothing to do with whether a project is open source; many trustworthy open-source apps show the same warning.
-
-Arcadia is fully open source, so you don't have to take the installer on trust: read the code and [build it yourself](#-build-from-source). Releases are built straight from the tagged source, normally by [GitHub Actions](.github/workflows/release.yml).
-
-</details>
-
-<details>
-<summary><b>🛡️ Smart App Control blocks the installer</b></summary>
-
-<br>
-
-On Windows 11 PCs where **Smart App Control** is on, apps that aren't signed are blocked outright — there is no "Run anyway" button. Your options:
-
-- **Wait for the Microsoft Store version** (below). Microsoft signs Store apps, so Smart App Control lets them through.
-- **Run Arcadia from source** with `npm start` ([Build from source](#-build-from-source)). That runs on Electron's own signed runtime, which Smart App Control allows.
-
-Turning Smart App Control off can't be undone without reinstalling Windows, so don't turn it off just for Arcadia.
-
-</details>
-
-### Microsoft Store
-
-Arcadia is on its way to the Microsoft Store as **Arcadia Launcher**. The Store version is signed by Microsoft, so it installs with no SmartScreen or Smart App Control warning, and the Store keeps it up to date. A link will appear here once it's live.
-
 ### Updates
 
-The installed version checks GitHub for a new release every time it starts. With automatic updates on (**Settings → Updates**, on by default), a new version downloads in the background and installs the next time you quit Arcadia. Turn the switch off to be asked instead — **Restart and install** appears in **Settings → Updates** when a new version is ready.
+The Microsoft Store version is updated by the Store.
 
-The Microsoft Store version doesn't use this; the Store updates it.
+The GitHub version checks GitHub for a new release every time it starts. With automatic updates on (**Settings → Updates**, on by default), a new version downloads in the background and installs the next time you quit Arcadia. Turn the switch off to be asked instead — **Restart and install** appears in **Settings → Updates** when a new version is ready.
 
 ### Uninstalling
 
@@ -528,7 +504,6 @@ Adding another store means one file in `src/accounts/` exporting `{ id, signIn, 
 
 ## 🧭 Roadmap
 
-- **Microsoft Store release** as Arcadia Launcher
 - **Emulators** — Switch emulators and DuckStation (PlayStation), with an emulator + game-folder profile
 - More stores, such as Battle.net and Amazon Games
 

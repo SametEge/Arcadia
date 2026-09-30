@@ -1,6 +1,6 @@
 {
   "name": "arcadia",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "All your games in one beautiful library: Steam, Epic, Xbox, GOG, EA and Ubisoft Connect games with real cover art, launched or installed in one click.",
   "homepage": "https://github.com/SametEge/Arcadia#readme",
   "repository": {
@@ -15,7 +15,7 @@
     "start": "electron .",
     "dist": "node build/dist-win.js",
     "release": "node build/dist-win.js --publish always",
-    "test": "node build/test_i18n.js && node build/test_merge.js && node build/test_downloads.js && node build/test_epic_catalog.js && node build/test_lists.js && node build/test_accounts.js && node build/test_steam_delete.js && node build/test_covers.js",
+    "test": "node build/test_i18n.js && node build/test_merge.js && node build/test_downloads.js && node build/test_epic_catalog.js && node build/test_lists.js && node build/test_accounts.js && node build/test_steam_delete.js && node build/test_covers.js && node build/test_registry.js",
     "test:login": "electron build/test_login_window.js",
     "icon": "py build/make_icon.py",
     "dist:store": "node build/dist-store.js"

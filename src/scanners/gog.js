@@ -10,54 +10,39 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { regTree, regValue } = require('./util');
 
 const GAMES_KEY = 'HKLM\\SOFTWARE\\WOW6432Node\\GOG.com\\Games';
 const GALAXY_KEY = 'HKLM\\SOFTWARE\\WOW6432Node\\GOG.com\\GalaxyClient\\paths';
 
-function regQuery(key, args = '') {
-  try {
-    return execSync(`reg query "${key}" ${args}`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-  } catch {
-    return '';
-  }
-}
-
-function value(out, name) {
-  const m = out.match(new RegExp(`${name}\\s+REG_\\w+\\s+(.+)`, 'i'));
-  return m ? m[1].trim() : null;
-}
-
-function galaxyExe() {
-  const out = regQuery(GALAXY_KEY, '/v client');
-  const dir = value(out, 'client');
+async function galaxyExe() {
+  const dir = await regValue(GALAXY_KEY, 'client');
   if (!dir) return null;
   const exe = path.join(dir, 'GalaxyClient.exe');
   return fs.existsSync(exe) ? exe : null;
 }
 
 async function scanGog() {
-  const list = regQuery(GAMES_KEY);
-  if (!list) return [];
+  const tree = await regTree(GAMES_KEY);
+  if (!tree.size) return [];
 
-  const galaxy = galaxyExe();
+  const galaxy = await galaxyExe();
   const games = [];
   const seen = new Set();
 
-  for (const line of list.split(/\r?\n/)) {
-    const m = line.match(/\\Games\\(\d+)\s*$/);
+  for (const [key, info] of tree) {
+    const m = key.match(/\\Games\\(\d+)$/i);
     if (!m) continue;
     const id = m[1];
     if (seen.has(id)) continue;
 
-    const info = regQuery(`${GAMES_KEY}\\${id}`);
-    const name = value(info, 'gameName') || value(info, 'startMenu');
-    const dir = value(info, 'path');
+    const name = info.gamename || info.startmenu;
+    const dir = info.path;
     if (!name || !dir || !fs.existsSync(dir)) continue;
     seen.add(id);
 
     // `exe` is usually a full path, occasionally just a file name.
-    let exe = value(info, 'exe');
+    let exe = info.exe || null;
     if (exe && !path.isAbsolute(exe)) exe = path.join(dir, exe);
     if (exe && !fs.existsSync(exe)) exe = null;
 

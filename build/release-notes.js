@@ -32,7 +32,7 @@ process.stdout.write(`${body}
 
 ### Install
 
-Download **Arcadia-Setup-${version}.exe** below and run it. Arcadia keeps itself up to date after that.
+**Recommended:** get Arcadia from the [Microsoft Store](https://apps.microsoft.com/detail/9N22381XP9S9). Microsoft signs the Store version, so it installs with no SmartScreen or Smart App Control warning, and the Store keeps it up to date.
 
-If Windows SmartScreen says it protected your PC, choose **More info → Run anyway** — the installer isn't signed with a paid certificate yet, which is normal for open-source apps. It was built by GitHub Actions from this tag; \`SHA256SUMS.txt\` lets you check the file you downloaded.
+Or download **Arcadia-Setup-${version}.exe** below and run it; it keeps itself up to date after that. This installer isn't signed like the Store version, so Windows SmartScreen may ask you to confirm it (**More info → Run anyway**) and Smart App Control blocks it. It was built from this tag's source; \`SHA256SUMS.txt\` lets you check the file you downloaded.
 `);

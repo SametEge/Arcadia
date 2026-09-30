@@ -48,14 +48,16 @@ pages.
 
 ## Submission options → Restricted capabilities
 
-Partner Center asks why the app needs **runFullTrust**. Suggested answer:
+Partner Center asks why the app needs **runFullTrust**. The box takes at most
+500 characters; this is the answer submitted with 1.0.3 (exactly 500):
 
-> Arcadia is a desktop game library built with Electron and packaged with the
-> Desktop Bridge. It needs full trust to do its core job: find games installed
-> by other launchers (reading their install records in the registry and on
-> disk), start those games and the launchers' own clients, show whether a game
-> is running and close it on request. These are standard Win32 operations that
-> the sandboxed app model does not provide.
+> Arcadia is an Electron desktop game library. It needs full trust to: read
+> other launchers' install records in the registry and on disk (Steam, Epic,
+> EA, GOG, Ubisoft, Riot) to find installed games; start games and store
+> clients via their protocols or .exe; detect running games and close them on
+> request; and hand installs to the store's own client while reading its
+> progress files. The app container does not allow these Win32 operations. No
+> server, no telemetry. Source: github.com/SametEge/Arcadia
 
 ## Notes for certification
 
@@ -265,7 +267,10 @@ Steam, Epic, Xbox, GOG, EA, Ubisoft 게임을 하나의 멋진 라이브러리�
 
 **검색어**
 
-게임 런처 · 게임 라이브러리 · 게임 · 런처 · 게임 컬렉션 · PC 게임 · 게임 관리
+게임 런처 · 게임 라이브러리 관리 · 비디오 게임 · 런처 · 게임 컬렉션 · PC 게임 · 게임 관리
+
+(Partner Center's keyword box won't take "게임 라이브러리" or "게임" on their own — its AI
+suggestion "게임 라이브러리 관리" swallows Enter — so those two became the suggestion and "비디오 게임".)
 
 **추가 라이선스 조건**
 

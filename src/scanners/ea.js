@@ -13,41 +13,32 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { regTree } = require('./util');
 
 const LOCAL_CONTENT = [
   path.join(process.env.ProgramData || 'C:\\ProgramData', 'EA Desktop', 'LocalContent'),
   path.join(process.env.ProgramData || 'C:\\ProgramData', 'Origin', 'LocalContent'),
 ];
 
-// Uninstall entries published by EA titles, used for the install folder.
-function eaInstallDirs() {
-  const dirs = new Map(); // lowercased display name -> install location
-  const roots = [
-    'HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall',
-    'HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall',
-  ];
-  for (const root of roots) {
-    let list = '';
-    try {
-      list = execSync(`reg query "${root}"`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-    } catch { continue; }
+const UNINSTALL_ROOTS = [
+  'HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall',
+  'HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall',
+];
 
-    for (const line of list.split(/\r?\n/)) {
-      const key = line.trim();
-      if (!key.startsWith('HKEY_')) continue;
-      let info = '';
-      try {
-        info = execSync(`reg query "${key}"`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-      } catch { continue; }
+// Uninstall entries published by EA titles, used for the install folder.
+async function eaInstallDirs() {
+  const dirs = new Map(); // lowercased display name -> install location
+  for (const root of UNINSTALL_ROOTS) {
+    for (const [key, values] of await regTree(root)) {
+      const info = key + '\n' + Object.values(values).join('\n');
       // Only EA's own entries; Steam-published EA games point at steam.exe and
       // must not be picked up here — they already come from the Steam scanner.
       if (!/Electronic Arts|EA Games|Origin/i.test(info)) continue;
       if (/steam\.exe/i.test(info)) continue;
 
-      const name = (info.match(/DisplayName\s+REG_SZ\s+(.+)/i) || [])[1];
-      const loc = (info.match(/InstallLocation\s+REG_SZ\s+(.+)/i) || [])[1];
-      if (name && loc && fs.existsSync(loc.trim())) dirs.set(name.trim().toLowerCase(), loc.trim());
+      const name = values.displayname;
+      const loc = values.installlocation;
+      if (name && loc && fs.existsSync(loc)) dirs.set(name.toLowerCase(), loc);
     }
   }
   return dirs;
@@ -65,8 +56,7 @@ function offerIdFrom(file) {
 }
 
 async function scanEa() {
-  const installDirs = eaInstallDirs();
-  const games = [];
+  const found = [];
   const seen = new Set();
 
   for (const root of LOCAL_CONTENT) {
@@ -91,20 +81,22 @@ async function scanEa() {
       const key = title.toLowerCase();
       if (seen.has(key)) continue;
       seen.add(key);
-
-      const installDir = installDirs.get(key) || null;
-      games.push({
-        id: `ea:${offerId}`,
-        title,
-        source: 'ea',
-        launch: { type: 'url', value: `origin2://game/launch?offerIds=${encodeURIComponent(offerId)}` },
-        installUrl: `origin2://game/download?offerId=${encodeURIComponent(offerId)}`,
-        installDir,
-        exeName: '',
-      });
+      found.push({ title, key, offerId });
     }
   }
-  return games;
+  // Most PCs have no EA games at all; don't walk the uninstall list for them.
+  if (!found.length) return [];
+
+  const installDirs = await eaInstallDirs();
+  return found.map(({ title, key, offerId }) => ({
+    id: `ea:${offerId}`,
+    title,
+    source: 'ea',
+    launch: { type: 'url', value: `origin2://game/launch?offerIds=${encodeURIComponent(offerId)}` },
+    installUrl: `origin2://game/download?offerId=${encodeURIComponent(offerId)}`,
+    installDir: installDirs.get(key) || null,
+    exeName: '',
+  }));
 }
 
 module.exports = { scanEa };

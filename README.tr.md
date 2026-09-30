@@ -16,7 +16,9 @@ gerçek kapak görselleriyle gösterir; hepsini tek tıkla açar ya da kurar.
 ![Electron](https://img.shields.io/badge/Electron-42-47848f)
 [![Lisans](https://img.shields.io/badge/lisans-MIT-8b5cff)](LICENSE)
 
-### [⬇ Son sürümü indir](https://github.com/SametEge/Arcadia/releases/latest)
+<a href="https://apps.microsoft.com/detail/9N22381XP9S9?mode=direct"><img src="https://get.microsoft.com/images/tr%20dark.svg" width="240" alt="Microsoft'tan edinin" /></a>
+
+<sub>ya da kurulum dosyasını <a href="https://github.com/SametEge/Arcadia/releases/latest">GitHub Releases</a>'tan indir</sub>
 
 [English](README.md) · **Türkçe**
 
@@ -77,56 +79,30 @@ gerçek kapak görselleriyle gösterir; hepsini tek tıkla açar ya da kurar.
 - Yaklaşık **400 MB** boş disk alanı
 - Kullandığın mağaza istemcileri (Steam, Epic Games Launcher, EA app, GOG Galaxy, Ubisoft Connect, Microsoft Store). Arcadia oyunları *onların üzerinden* açar ve kurar; yani bir oyunu oynamak için mağazasının kurulu olması gerekir.
 
-### Kurulum dosyası
+### Microsoft Store (önerilen)
+
+<a href="https://apps.microsoft.com/detail/9N22381XP9S9?mode=direct"><img src="https://get.microsoft.com/images/tr%20dark.svg" width="200" alt="Microsoft'tan edinin" /></a>
+
+Arcadia, Microsoft Store'da **[Arcadia Launcher](https://apps.microsoft.com/detail/9N22381XP9S9)** adıyla yayında. Store sürümünü Microsoft imzalar; tek tıkla, SmartScreen ya da Akıllı Uygulama Denetimi uyarısı olmadan kurulur ve güncel tutma işini Store yapar.
+
+### GitHub'dan kurulum dosyası
 
 1. [Releases](https://github.com/SametEge/Arcadia/releases/latest) sayfasından en son **`Arcadia-Setup-<sürüm>.exe`** dosyasını indir.
-2. Çalıştır. Windows önce uyarabilir — aşağıdaki iki nota bak.
-3. Kurulacağı yeri seç. Arcadia yalnızca senin Windows hesabın için kurulur, yönetici izni gerekmez. Başlat menüsüne ve masaüstüne kısayol ekler, açılır ve oyunlarını tarar.
+2. Çalıştır ve kurulacağı yeri seç. Arcadia yalnızca senin Windows hesabın için kurulur, yönetici izni gerekmez. Başlat menüsüne ve masaüstüne kısayol ekler, açılır ve oyunlarını tarar.
 
-Release iş akışıyla hazırlanan sürümlerde bir `SHA256SUMS.txt` de bulunur; indirdiğin dosyayı kontrol edebilirsin:
+Bu kurulum dosyası Store sürümü gibi imzalı olmadığı için Windows SmartScreen onay isteyebilir (**Ek bilgi → Yine de çalıştır**); Akıllı Uygulama Denetimi açık olan bilgisayarlarda ise engellenir — oralarda Microsoft Store sürümünü kullan.
+
+Her sürümde bir `SHA256SUMS.txt` de bulunur; indirdiğin dosyayı kontrol edebilirsin:
 
 ```powershell
 Get-FileHash .\Arcadia-Setup-<sürüm>.exe -Algorithm SHA256
 ```
 
-<details>
-<summary><b>⚠️ "Windows bilgisayarınızı korudu" (SmartScreen)</b></summary>
-
-<br>
-
-Bu uyarı **normal ve beklenen** bir şeydir — Arcadia'da bir sorun olduğu anlamına **gelmez**. Devam etmek için:
-
-> **Ek bilgi → Yine de çalıştır**
-
-Windows SmartScreen, **ücretli** bir kod imzalama sertifikasıyla imzalanmamış *her* kurulum dosyası için uyarır. Kod imzalamanın bir projenin açık kaynak olup olmamasıyla ilgisi yoktur; güvenilir birçok açık kaynak uygulama da aynı uyarıyı gösterir.
-
-Arcadia tamamen açık kaynaktır; kurulum dosyasına körü körüne güvenmek zorunda değilsin: kodu okuyabilir, [kendin derleyebilirsin](#-kaynaktan-derleme). Sürümler etiketlenmiş kaynaktan doğrudan derlenir, normalde [GitHub Actions](.github/workflows/release.yml) ile.
-
-</details>
-
-<details>
-<summary><b>🛡️ Akıllı Uygulama Denetimi kurulumu engelliyor</b></summary>
-
-<br>
-
-**Akıllı Uygulama Denetimi** (Smart App Control) açık olan Windows 11 bilgisayarlarda imzasız uygulamalar doğrudan engellenir — "Yine de çalıştır" düğmesi yoktur. Seçeneklerin:
-
-- **Microsoft Store sürümünü bekle** (aşağıda). Store uygulamalarını Microsoft imzaladığı için Akıllı Uygulama Denetimi onlara izin verir.
-- **Arcadia'yı kaynaktan çalıştır:** `npm start` ([Kaynaktan derleme](#-kaynaktan-derleme)). Electron'un kendi imzalı çalışma ortamını kullandığı için Akıllı Uygulama Denetimi buna izin verir.
-
-Akıllı Uygulama Denetimi kapatılırsa Windows'u yeniden kurmadan tekrar açılamaz; sadece Arcadia için kapatma.
-
-</details>
-
-### Microsoft Store
-
-Arcadia, **Arcadia Launcher** adıyla Microsoft Store'a geliyor. Store sürümünü Microsoft imzalar; SmartScreen ya da Akıllı Uygulama Denetimi uyarısı olmadan kurulur ve güncel tutma işini Store yapar. Yayına girince bağlantısı buraya eklenecek.
-
 ### Güncellemeler
 
-Kurulu sürüm her açılışta GitHub'da yeni sürüm var mı diye bakar. **Ayarlar → Güncellemeler**'deki otomatik güncelleme açıksa (varsayılan olarak açık), yeni sürüm arka planda iner ve Arcadia'dan bir sonraki çıkışında kurulur. Kapatırsan önce sana sorulur: yeni sürüm hazır olduğunda **Ayarlar → Güncellemeler**'de **Yeniden başlat ve kur** düğmesi çıkar.
+Microsoft Store sürümünü Store günceller.
 
-Microsoft Store sürümü bunu kullanmaz; onu Store günceller.
+GitHub sürümü her açılışta GitHub'da yeni sürüm var mı diye bakar. **Ayarlar → Güncellemeler**'deki otomatik güncelleme açıksa (varsayılan olarak açık), yeni sürüm arka planda iner ve Arcadia'dan bir sonraki çıkışında kurulur. Kapatırsan önce sana sorulur: yeni sürüm hazır olduğunda **Ayarlar → Güncellemeler**'de **Yeniden başlat ve kur** düğmesi çıkar.
 
 ### Kaldırma
 
@@ -528,7 +504,6 @@ Yeni bir mağaza eklemek için `src/accounts/` içine `{ id, signIn, signOut, st
 
 ## 🧭 Yol haritası
 
-- **Microsoft Store sürümü** — Arcadia Launcher adıyla
 - **Emülatörler** — Switch emülatörleri ve DuckStation (PlayStation), emülatör + oyun klasörü profiliyle
 - Battle.net ve Amazon Games gibi başka mağazalar
 

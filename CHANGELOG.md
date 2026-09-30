@@ -10,6 +10,24 @@ before tagging a release, move the **Unreleased** notes under a new
 
 ## [Unreleased]
 
+## [1.0.4] — 2026-09-30
+
+### Fixed
+
+- Arcadia no longer freezes ("not responding") a few seconds after it
+  opens. The EA app scan read every entry of Windows' installed-programs list
+  with its own blocking registry query — about 14 seconds on a typical PC,
+  even with no EA games installed. It now skips the registry when no EA games
+  are installed and otherwise reads the whole list in one call; the GOG,
+  Ubisoft Connect and desktop-shortcut scans don't block the window any more
+  either.
+
+### Changed
+
+- Arcadia is on the Microsoft Store as **Arcadia Launcher** — signed by
+  Microsoft, so it installs with no SmartScreen or Smart App Control warning.
+  The README now points there first.
+
 ## [1.0.3] — 2026-09-24
 
 ### Added
@@ -98,7 +116,8 @@ First release.
   한국어, Español.
 - Minimalist dark UI.
 
-[Unreleased]: https://github.com/SametEge/Arcadia/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/SametEge/Arcadia/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/SametEge/Arcadia/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/SametEge/Arcadia/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/SametEge/Arcadia/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/SametEge/Arcadia/compare/v1.0.0...v1.0.1
