@@ -10,6 +10,12 @@ before tagging a release, move the **Unreleased** notes under a new
 
 ## [Unreleased]
 
+### Fixed
+
+- Search found nothing when the case of an "i" differed outside Turkish:
+  "inside" didn't match "INSIDE", because titles were lowercased by Turkish
+  rules (I → ı) for every language.
+
 ## [1.0.4] — 2026-09-30
 
 ### Fixed

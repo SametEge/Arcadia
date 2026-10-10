@@ -475,6 +475,10 @@ const el = (tag, cls, html) => {
   return n;
 };
 const displayTitle = (g) => g.customTitle || g.title;
+// Case-insensitive search key, the same in every UI language. Turkish rules
+// alone turn "I" into dotless "ı", so "inside" wouldn't find "INSIDE"; folding
+// ı back to i after lowercasing keeps İ/I/i/ı all matching each other.
+const searchKey = (s) => String(s).toLocaleLowerCase('tr').replace(/ı/g, 'i');
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 /* ------------------------------- Boot ---------------------------------- */
@@ -669,8 +673,8 @@ function visibleGames() {
   else if (state.filter !== 'all') list = list.filter((g) => g.source === state.filter);
 
   if (state.search.trim()) {
-    const q = state.search.trim().toLocaleLowerCase('tr');
-    list = list.filter((g) => displayTitle(g).toLocaleLowerCase('tr').includes(q));
+    const q = searchKey(state.search.trim());
+    list = list.filter((g) => searchKey(displayTitle(g)).includes(q));
   }
 
   const by = {
@@ -1321,14 +1325,14 @@ function openCompanionPicker(g) {
       if (selected.has(o.id)) { selected.delete(o.id); row.classList.remove('selected'); }
       else { selected.add(o.id); row.classList.add('selected'); }
     };
-    rows.push({ el: row, title: displayTitle(o).toLocaleLowerCase('tr') });
+    rows.push({ el: row, title: searchKey(displayTitle(o)) });
     list.appendChild(row);
   }
   body.appendChild(list);
   modal.appendChild(body);
 
   search.querySelector('input').oninput = (e) => {
-    const q = e.target.value.trim().toLocaleLowerCase('tr');
+    const q = searchKey(e.target.value.trim());
     for (const r of rows) r.el.style.display = !q || r.title.includes(q) ? '' : 'none';
   };
 
