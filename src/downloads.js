@@ -60,6 +60,10 @@ function push() {
 
 /* ------------------------------- Steam ---------------------------------- */
 
+// StateFlags bits meaning an update is pending or in progress:
+// UpdateRequired (2), UpdateRunning (256), UpdatePaused (512), UpdateStarted (1024).
+const STEAM_BUSY = 2 | 256 | 512 | 1024;
+
 // Locates appmanifest_<appid>.acf in whichever Steam library holds the game.
 function steamManifest(appid) {
   const steamPath = getSteamPath();
@@ -92,8 +96,11 @@ function pollSteam(d) {
   const staged = Number(st.BytesStaged || 0);
   const flags = Number(st.StateFlags || 0);
 
-  // Fully installed: flag 4 set and nothing left to move.
-  const done = (flags & 4) !== 0 && toDownload > 0 && downloaded >= toDownload && staged >= toStage;
+  // Fully installed: flag 4 set, no update queued or running, and nothing left
+  // to move. The byte counters may all be 0 — Steam zeroes them some time after
+  // an install, and never fills them when it finds the files already on disk —
+  // so 0/0 counts as finished too. A fresh install never has flag 4 until it's done.
+  const done = (flags & 4) !== 0 && (flags & STEAM_BUSY) === 0 && downloaded >= toDownload && staged >= toStage;
   if (done) {
     d.state = 'done';
     d.percent = 100;

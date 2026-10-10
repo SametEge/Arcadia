@@ -48,6 +48,10 @@ const check = (name, cond, extra) => {
       const st = m.st;
       const midway = Number(st.BytesDownloaded || 0) < Number(st.BytesToDownload || 0)
         || Number(st.BytesStaged || 0) < Number(st.BytesToStage || 0);
+      // Guncellemesi siraya alinmis/duraklatilmis oyunun durumu Steam'e bagli;
+      // burada beklenen bir sonuc yok.
+      const queued = (Number(st.StateFlags || 0) & (2 | 256 | 512 | 1024)) !== 0;
+      if (queued && !midway) continue;
       const d = { source: 'steam', appid, state: 'pending', percent: 0, downloaded: 0, total: 0 };
       _internals.pollSteam(d);
       if (midway) {
@@ -116,6 +120,25 @@ const check = (name, cond, extra) => {
     dl2.pollSteam(d);
     check('999/1000 -> hala done degil', d.state !== 'done', d.state);
     check('yuzde 99de sabitlenir', d.percent === 99, d.percent);
+
+    // Steam bir sure sonra sayaclari sifirlar (diskte bulunan oyunda hic
+    // doldurmaz): bayrak 4 + 0/0 kurulmus demektir, sonsuza dek pending degil.
+    write('900005', { appid: 900005, name: 'Sifir Sayac', StateFlags: 4, BytesToDownload: 0, BytesDownloaded: 0, BytesToStage: 0, BytesStaged: 0 });
+    d = { source: 'steam', appid: '900005', state: 'pending', percent: 0, downloaded: 0, total: 0 };
+    dl2.pollSteam(d);
+    check('bayrak 4 + sifir sayac -> done', d.state === 'done', d.state);
+
+    // Yeni kurulumun ilk ani: manifest var ama bayrak 4 yok, sayaclar 0.
+    write('900006', { appid: 900006, name: 'Yeni Basladi', StateFlags: 1026, BytesToDownload: 0, BytesDownloaded: 0, BytesToStage: 0, BytesStaged: 0 });
+    d = { source: 'steam', appid: '900006', state: 'pending', percent: 0, downloaded: 0, total: 0 };
+    dl2.pollSteam(d);
+    check('yeni kurulum, sayac 0 -> done degil', d.state !== 'done', d.state);
+
+    // Kurulu ama guncelleme sirada (4|2): henuz bitmis sayilmaz.
+    write('900007', { appid: 900007, name: 'Guncelleme Bekliyor', StateFlags: 6, BytesToDownload: 0, BytesDownloaded: 0, BytesToStage: 0, BytesStaged: 0 });
+    d = { source: 'steam', appid: '900007', state: 'pending', percent: 0, downloaded: 0, total: 0 };
+    dl2.pollSteam(d);
+    check('guncelleme bekleyen oyun -> done degil', d.state !== 'done', d.state);
   }
 
   steamMod.getLibraryFolders = origFolders;

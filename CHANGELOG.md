@@ -10,6 +10,13 @@ before tagging a release, move the **Unreleased** notes under a new
 
 ## [Unreleased]
 
+### Fixed
+
+- A Steam install could end as "Didn't start" although it had finished: when
+  Steam found the files already on disk (or had reset the byte counters), its
+  manifest said "fully installed" with 0 bytes, which Arcadia never counted as
+  done.
+
 ## [1.0.4] — 2026-09-30
 
 ### Fixed
