@@ -56,7 +56,7 @@ gerçek kapak görselleriyle gösterir; hepsini tek tıkla açar ya da kurar.
 - **Bir oyun, bir kart** — birden fazla mağazada görünen oyun iki kez gösterilmez.
 - **Karar veremiyor musun?** — rastgele seçici senin yerine seçer.
 - **Gizliliğine saygılı** — sunucu yok, telemetri yok, reklam yok. Her mağazanın kendi sayfasında giriş yaparsın; Arcadia şifreni asla görmez.
-- **Altı dil**, sade koyu tasarım, sistem tepsisi ve otomatik güncellemeler.
+- **Yedi dil**, sade koyu tasarım, sistem tepsisi ve otomatik güncellemeler.
 
 ## 📸 Ekran görüntüleri
 
@@ -230,7 +230,7 @@ Anahtarın yalnızca senin bilgisayarında saklanır.
 | **Steam Listeleri** | Steam koleksiyonlarını göster, yenile; Steam'in kapanmasını bekleyen silmeleri uygula. |
 | **Kapak Görselleri (SteamGridDB)** | Kendi SteamGridDB anahtarını kullan. |
 | **Vurgu Rengi, Logo Rengi, Logo Şekli, Logo Simgesi** | Arcadia'yı kendine göre ayarla; Windows görev çubuğu simgesi logoyla birlikte anında değişir. |
-| **Dil** | Altı dil arasında geçiş yap. |
+| **Dil** | Yedi dil arasında geçiş yap. |
 | **Başlangıç** | Arcadia'yı Windows'la birlikte başlat. |
 | **Güncellemeler** | Otomatik güncellemeyi aç/kapat, yeni sürüm var mı bak, inmiş sürümü kur. |
 | **Hakkında** | Arcadia sürümün. |
@@ -265,15 +265,16 @@ Hiçbir mağaza başka bir uygulamanın oyun indirmesine izin veren bir API sunm
 
 ## 🌍 Diller
 
-Arcadia altı dil konuşur ve Windows dilinden birini kendisi seçer; **Ayarlar → Dil**'den istediğin zaman değiştirebilirsin.
+Arcadia yedi dil konuşur ve Windows dilinden birini kendisi seçer; **Ayarlar → Dil**'den istediğin zaman değiştirebilirsin.
 
 | Dil | | Dil | |
 |---|---|---|---|
 | 🇹🇷 Türkçe | Türkçe | 🇯🇵 日本語 | Japonca |
 | 🇬🇧 English | İngilizce | 🇰🇷 한국어 | Korece |
 | 🇩🇪 Deutsch | Almanca | 🇪🇸 Español | İspanyolca |
+| 🇷🇺 Русский | Rusça | | |
 
-Otomatik seçim: Türkçe ve Azerbaycanca → Türkçe, Almanca → Almanca, Japonca → Japonca, Korece → Korece, İspanyolca → İspanyolca, geri kalan her şey → İngilizce.
+Otomatik seçim: Türkçe ve Azerbaycanca → Türkçe, Almanca → Almanca, Japonca → Japonca, Korece → Korece, İspanyolca → İspanyolca, Rusça → Rusça, geri kalan her şey → İngilizce.
 
 ## 🔒 Gizlilik ve verilerin
 
@@ -390,7 +391,7 @@ npm run icon        # simgeleri ve Store karolarını assets/logo.svg'den yenide
 
 | Takım | Neyi sınar |
 |---|---|
-| `test_i18n.js` | her arayüz metninin altı dilde de bulunması |
+| `test_i18n.js` | her arayüz metninin yedi dilde de bulunması |
 | `test_merge.js` | taranan ve sahip olunan oyunların birleştirilmesi, oyun başına tek kart |
 | `test_downloads.js` | kurulum ilerlemesinin mağazaların kendi dosyalarından okunması |
 | `test_epic_catalog.js` | toplu Epic katalog sorguları ve önbellekleri |
@@ -431,8 +432,8 @@ Store paketi sertifikasyon sırasında Microsoft tarafından imzalanır; SmartSc
 
 1. Store adı **Arcadia Launcher** (Store ID `9N22381XP9S9`); Partner Center kimliği `package.json`'daki `build.appx` içinde hazır. Oradaki `displayName` ayrılan adla birebir aynı kalmalı.
 2. `npm run dist:store` bilgisayarda kurulu Windows SDK'yı kullanır (electron-builder'ın indirdiği araçlar ya Windows 11'de çalışmıyor ya da Akıllı Uygulama Denetimi'ne takılıyor). Karo görselleri `build/appx`'ten gelir, `npm run icon` yeniden üretir.
-3. Her yüklemede `version` bir öncekinden büyük olmalı. Paket altı dilin hepsini bildirir ve her biri için bir Store sayfası gerekir.
-4. `.appx`'i yükle. Altı dilin mağaza metinleri, `runFullTrust` gerekçesi ve sertifikasyon notları [`store/LISTING.md`](store/LISTING.md)'de; gizlilik politikası [`PRIVACY.md`](PRIVACY.md).
+3. Her yüklemede `version` bir öncekinden büyük olmalı. Paket yedi dilin hepsini bildirir ve her biri için bir Store sayfası gerekir.
+4. `.appx`'i yükle. Yedi dilin mağaza metinleri, `runFullTrust` gerekçesi ve sertifikasyon notları [`store/LISTING.md`](store/LISTING.md)'de; gizlilik politikası [`PRIVACY.md`](PRIVACY.md).
 
 Store sürümünde Arcadia'nın kendi güncelleyicisi kapalıdır — Store uygulamalarını Store günceller — ve açılışta başlatma Windows'a bırakılır.
 
@@ -474,7 +475,7 @@ Kütüphanen ve ayarların `%APPDATA%\Arcadia\library.json` içinde saklanır; m
 Arcadia/
 ├── main.js                 # Electron ana süreci: pencere, IPC, tepsi, simge
 ├── preload.js              # Arayüz ile ana süreç arasındaki güvenli köprü
-├── renderer/               # Arayüz (HTML / CSS / JS, kendi 6 dilli sözlüğüyle)
+├── renderer/               # Arayüz (HTML / CSS / JS, kendi 7 dilli sözlüğüyle)
 ├── src/
 │   ├── library.js          # Kütüphane ve ayar deposu (kurulu + sahip olunan birleştirme, listeler)
 │   ├── launcher.js         # Oyun başlatma
@@ -496,7 +497,7 @@ Arcadia/
 │   ├── store-shots.js      # Store / README ekran görüntüleri (electron . --store-shots)
 │   └── test_*.js           # Ekransız testler (npm test)
 ├── docs/screenshots/       # README görselleri (İngilizce, Türkçesi tr/ içinde)
-├── store/LISTING.md        # Altı dilde Microsoft Store sayfa metinleri
+├── store/LISTING.md        # Yedi dilde Microsoft Store sayfa metinleri
 └── .github/                # CI, release iş akışı, issue ve PR şablonları
 ```
 

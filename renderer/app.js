@@ -58,6 +58,7 @@ const I18N = {
     dlHandoff: 'İndirmeyi mağazanın kendi istemcisi yapar; Arcadia ilerlemeyi buradan gösterir.',
     dlEta: 'kalan {t}', dlXboxNote: 'Microsoft Store ilerleme bilgisi vermiyor; yalnızca bitince görünür.',
     openingStore: 'Mağaza açılıyor…',
+    durHM: '{h} sa {m} dk', durM: '{m} dk', durS: '{s} sn', byteUnits: 'B KB MB GB TB', dlSpeed: '{b}/s',
     settingsUpdates: 'Güncellemeler', autoUpdateLabel: 'Güncellemeleri otomatik kur',
     autoUpdateHint: 'Açıkken Arcadia yeni sürümü arka planda indirir ve bir sonraki kapanışta kurar. Kapalıyken sadece haber verir.',
     checkUpdate: 'Güncelleme Kontrol Et', updChecking: 'Kontrol ediliyor…', updLatest: 'En güncel sürümü kullanıyorsun.',
@@ -118,6 +119,7 @@ const I18N = {
     dlHandoff: "The store's own client does the downloading; Arcadia shows the progress here.",
     dlEta: '{t} left', dlXboxNote: 'The Microsoft Store reports no progress — it only shows up once finished.',
     openingStore: 'Opening store…',
+    durHM: '{h} h {m} min', durM: '{m} min', durS: '{s} s', byteUnits: 'B KB MB GB TB', dlSpeed: '{b}/s',
     settingsUpdates: 'Updates', autoUpdateLabel: 'Install updates automatically',
     autoUpdateHint: 'When on, Arcadia downloads a new version in the background and installs it the next time it closes. When off, it only tells you.',
     checkUpdate: 'Check for Updates', updChecking: 'Checking…', updLatest: "You're on the latest version.",
@@ -178,6 +180,7 @@ const I18N = {
     dlHandoff: 'Der Store-Client lädt herunter; Arcadia zeigt den Fortschritt hier an.',
     dlEta: 'noch {t}', dlXboxNote: 'Der Microsoft Store meldet keinen Fortschritt — es erscheint erst nach Abschluss.',
     openingStore: 'Shop wird geöffnet…',
+    durHM: '{h} Std. {m} Min.', durM: '{m} Min.', durS: '{s} Sek.', byteUnits: 'B KB MB GB TB', dlSpeed: '{b}/s',
     settingsUpdates: 'Updates', autoUpdateLabel: 'Updates automatisch installieren',
     autoUpdateHint: 'Wenn aktiv, lädt Arcadia neue Versionen im Hintergrund und installiert sie beim nächsten Beenden. Sonst wirst du nur benachrichtigt.',
     checkUpdate: 'Nach Updates suchen', updChecking: 'Wird geprüft…', updLatest: 'Du hast die neueste Version.',
@@ -238,6 +241,7 @@ const I18N = {
     dlHandoff: 'ダウンロードはストア自身のクライアントが行い、Arcadiaは進捗をここに表示します。',
     dlEta: '残り {t}', dlXboxNote: 'Microsoft Storeは進捗を通知しません。完了後に表示されます。',
     openingStore: 'ストアを開いています…',
+    durHM: '{h}時間{m}分', durM: '{m}分', durS: '{s}秒', byteUnits: 'B KB MB GB TB', dlSpeed: '{b}/s',
     settingsUpdates: 'アップデート', autoUpdateLabel: 'アップデートを自動でインストール',
     autoUpdateHint: 'オンにすると、新しいバージョンをバックグラウンドでダウンロードし、次回終了時にインストールします。オフの場合は通知のみです。',
     checkUpdate: 'アップデートを確認', updChecking: '確認中…', updLatest: '最新バージョンです。',
@@ -298,6 +302,7 @@ const I18N = {
     dlHandoff: '다운로드는 스토어 자체 클라이언트가 수행하며 Arcadia는 진행 상황만 표시합니다.',
     dlEta: '{t} 남음', dlXboxNote: 'Microsoft Store는 진행률을 알려주지 않아 완료 후에만 표시됩니다.',
     openingStore: '스토어를 여는 중…',
+    durHM: '{h}시간 {m}분', durM: '{m}분', durS: '{s}초', byteUnits: 'B KB MB GB TB', dlSpeed: '{b}/s',
     settingsUpdates: '업데이트', autoUpdateLabel: '업데이트 자동 설치',
     autoUpdateHint: '켜면 새 버전을 백그라운드에서 내려받아 다음 종료 시 설치합니다. 끄면 알림만 표시합니다.',
     checkUpdate: '업데이트 확인', updChecking: '확인 중…', updLatest: '최신 버전입니다.',
@@ -358,6 +363,7 @@ const I18N = {
     dlHandoff: 'La descarga la hace el cliente de la tienda; Arcadia muestra el progreso aquí.',
     dlEta: 'quedan {t}', dlXboxNote: 'Microsoft Store no informa del progreso: solo aparece al terminar.',
     openingStore: 'Abriendo la tienda…',
+    durHM: '{h} h {m} min', durM: '{m} min', durS: '{s} s', byteUnits: 'B KB MB GB TB', dlSpeed: '{b}/s',
     settingsUpdates: 'Actualizaciones', autoUpdateLabel: 'Instalar actualizaciones automáticamente',
     autoUpdateHint: 'Si está activo, Arcadia descarga la nueva versión en segundo plano y la instala al cerrarse. Si no, solo te avisa.',
     checkUpdate: 'Buscar actualizaciones', updChecking: 'Comprobando…', updLatest: 'Tienes la última versión.',
@@ -368,6 +374,69 @@ const I18N = {
     onbCardT: 'Haz clic para jugar', onbCardD: 'Haz clic en una tarjeta para iniciar. Clic derecho para favoritos, cambiar carátula, abrir junto y más.',
     onbDiscordT: 'Discord rápido', onbDiscordD: 'Abre Discord con un clic; se ilumina en verde cuando está abierto, ciérralo con ×.',
     onbSettingsT: 'Ajustes', onbSettingsD: 'Idioma, color, carátulas, carpetas y opciones de inicio están aquí.',
+  },
+  // Russian has three plural forms (1 игра, 2 игры, 5 игр) and t() has no
+  // plural support, so counts are written as "Игр: {n}", which reads right for any n.
+  ru: {
+    scan: 'Сканировать', addGame: 'Добавить игру', settings: 'Настройки', by: 'автор:',
+    sortRating: 'По оценке', metacriticLabel: 'Metacritic',
+    steamListsSection: 'Списки Steam', steamListsLabel: 'Показывать коллекции Steam', steamListsAskTitle: 'Найдены коллекции Steam', steamListsAskText: 'Найдено коллекций: {n} ({names}). Добавить их на боковую панель?', steamListsYes: 'Да, добавить', steamListsNo: 'Нет', steamListsNone: 'Коллекции Steam не найдены.', steamListsRefresh: 'Обновить списки', steamListsHint: 'Берутся из коллекций вашего клиента Steam. Переносятся только игры, добавленные вручную, — динамические коллекции Steam, собранные по правилам, не переносятся.',
+    listsSection: 'Списки', listAddTo: 'Добавить в список', listNew: 'Новый список…', listNewPrompt: 'Название списка:', listRenamePrompt: 'Новое название списка:', listDelete: 'Удалить список', listDeleted: 'Список «{n}» удалён', listAdded: '{t} → {n}', listRemoved: 'Игра «{t}» убрана из списка «{n}»', listSteamLocked: 'Эта игра попала в список через Steam, а Arcadia ничего не записывает в Steam.',
+    listDeleteSteamConfirm: '«{n}» — коллекция Steam. Она будет удалена и в Steam (на всех ваших устройствах). Продолжить?', listDeletedSteam: 'Список «{n}» удалён и в Steam', listDeletedSteamPending: 'Список «{n}» удалён. Steam сейчас запущен, поэтому коллекция исчезнет из Steam, как только вы его закроете.', listSteamApplied: 'Удалено списков и в Steam: {n}',
+    steamPendingInfo: 'Списков ждут удаления в Steam: {n}. Удаление применится, когда Steam полностью закроется (закрыть окно недостаточно — Steam продолжает работать в трее).', steamApplyNow: 'Закрыть Steam и применить', steamApplyAsk: 'Steam запущен. Закрыть и перезапустить его сейчас, чтобы применить удаление? Нажмите «Отмена», если идёт игра или загрузка, — удаление применится и тогда, когда вы сами закроете Steam.', steamApplying: 'Закрываем Steam и удаляем список…', steamApplied: 'Удалено списков в Steam: {n}. Steam перезапускается', steamBusy: 'Steam не закрылся (возможно, запущена игра или открыт диалог, ждущий ответа). Ничего не изменено.',
+    updStore: 'Arcadia обновляется через Microsoft Store — новые версии приходят автоматически.',
+    searchPlaceholder: 'Поиск игр…', sortTitle: 'А → Я', sortRecent: 'Недавно добавленные', sortPlayed: 'Недавно запущенные',
+    emptyTitle: 'Игр пока нет', emptyText: 'Запустите сканирование, чтобы найти игры, установленные на компьютере.', emptyScan: 'Найти игры',
+    allGames: 'Все игры', favorites: 'Избранное', sourcesSection: 'Источники',
+    src_steam: 'Steam', src_epic: 'Epic Games', src_xbox: 'Xbox', src_gog: 'GOG', src_ea: 'EA', src_ubisoft: 'Ubisoft Connect', src_shortcut: 'Ярлыки', src_folder: 'Папка', src_manual: 'Добавленные',
+    gamesCount: 'Игр: {n}', noGamesInView: 'Здесь нет игр.',
+    scanning: 'Сканирование игр…', scanningSource: 'Сканирование: {s}…', foundGames: 'Найдено игр: {n}', scanError: 'Ошибка сканирования: {e}',
+    launch: 'Запустить', addFav: 'Добавить в избранное', removeFav: 'Убрать из избранного', rename: 'Переименовать',
+    changeCover: 'Сменить обложку…', openFolder: 'Открыть папку', hide: 'Скрыть', removeFromLib: 'Убрать из библиотеки', remove: 'Убрать',
+    launching: 'Запуск: {t}…', launchFailed: 'Не удалось запустить: {e}', addedToast: 'Добавлено: {t}', hiddenToast: 'Игра «{t}» скрыта', removedToast: 'Игра «{t}» убрана',
+    renamePrompt: 'Новое название:', openingDiscord: 'Открываем Discord…', discordFailed: 'Не удалось открыть Discord',
+    closeDiscordTip: 'Закрыть Discord', discordClosed: 'Discord закрыт',
+    launchWith: 'Запускать вместе…', companionTitle: 'Запуск вместе с игрой', save: 'Сохранить',
+    companionHint: 'При запуске этой игры вместе с ней откроются выбранные приложения.', companionSearch: 'Поиск приложений…',
+    closeGameTip: 'Закрыть игру', gameClosed: 'Игра «{t}» закрыта',
+    settingsSources: 'Источники сканирования', optFolders: 'Свои папки', settingsFolders: 'Свои папки с играми',
+    noFolders: 'Папок пока нет. Добавьте папку, в которой лежат отдельные игры (.exe).', addFolderBtn: 'Добавить папку',
+    settingsAccent: 'Цвет акцента', settingsLogo: 'Цвет логотипа', settingsLogoShape: 'Форма логотипа', settingsLogoSymbol: 'Символ логотипа', settingsLanguage: 'Язык', rescanNow: 'Пересканировать', replayTour: 'Показать обучение снова',
+    coverHint: 'У игр Steam обложки подставляются автоматически. Для остальных: правый клик → «Сменить обложку», чтобы выбрать своё изображение.',
+    settingsAbout: 'О программе', aboutSub: 'Ваша игровая библиотека · автор: Samet Ege',
+    settingsCovers: 'Обложки (SteamGridDB)', sgdbPlaceholder: 'API-ключ SteamGridDB',
+    sgdbHint: 'Загружает обложки для игр не из Steam (Minecraft, FACEIT, LoL…). Бесплатный ключ: steamgriddb.com → Preferences → API. Вставьте его и пересканируйте.',
+    startupTitle: 'Запуск при старте', startupQuestion: 'Запускать Arcadia автоматически при включении компьютера?', startYes: 'Да, запускать', startNo: 'Нет',
+    settingsStartup: 'Автозапуск', autostartLabel: 'Запускать при включении ПК', bgNotice: 'Arcadia продолжает работать в фоне',
+    accCancelled: 'Аккаунт {s} не подключён — окно закрылось до завершения входа.',
+    randomGame: 'Случайная игра', randomTitle: 'Во что поиграть?', randomAnother: 'Не хочу эту', randomEmpty: 'Не из чего выбирать.', randomPlay: 'Играть',
+    librarySection: 'Библиотека', filterNotInstalled: 'Не установленные',
+    connectAccounts: 'Привязать аккаунт',
+    settingsAccounts: 'Привязанные аккаунты', accConnect: 'Подключить', accDisconnect: 'Выйти',
+    accHint: 'Привяжите аккаунт, и в библиотеке появятся купленные, но не установленные игры. Вход выполняется на странице самого магазина — Arcadia никогда не видит ваш пароль.',
+    accLinked: 'Привязано: {n}', accSync: 'Обновить библиотеку', accSyncing: 'Загрузка библиотеки {s}…',
+    accExpired: 'Сессия {s} истекла — привяжите аккаунт заново.', accFailed: 'Не удалось получить библиотеку {s}: {e}',
+    accConnected: 'Аккаунт {s} подключён', accDisconnected: 'Аккаунт {s} отключён',
+    notInstalled: 'Не установлена', installGame: 'Установить', filterInstalled: 'Установленные', filterOwned: 'Моя библиотека',
+    dlCancel: 'Отмена', dlStalled: 'Не началась', dlStalledHint: 'Магазин так и не начал установку — возможно, её отменили.', dlCancelledStore: 'Открыт список загрузок магазина — остановите загрузку там.',
+    downloads: 'Загрузки', dlEmpty: 'Сейчас ничего не загружается.', dlClear: 'Убрать завершённые',
+    dlPending: 'Запуск…', dlDownloading: 'Загрузка', dlInstalling: 'Установка', dlDone: 'Установлена', dlError: 'Ошибка',
+    dlRemove: 'Убрать из списка', dlOpenClient: 'Открыть в магазине', dlStarted: 'Началась загрузка: {t}',
+    dlNoUrl: 'Для этой игры нет ссылки на установку.', dlFinished: 'Игра «{t}» установлена',
+    dlHandoff: 'Загрузкой занимается клиент самого магазина, а Arcadia показывает здесь её ход.',
+    dlEta: 'осталось {t}', dlXboxNote: 'Microsoft Store не сообщает о ходе загрузки — игра появится, только когда установка завершится.',
+    openingStore: 'Открываем магазин…',
+    durHM: '{h} ч {m} мин', durM: '{m} мин', durS: '{s} с', byteUnits: 'Б КБ МБ ГБ ТБ', dlSpeed: '{b}/с',
+    settingsUpdates: 'Обновления', autoUpdateLabel: 'Устанавливать обновления автоматически',
+    autoUpdateHint: 'Если включено, Arcadia скачивает новую версию в фоне и устанавливает её при следующем закрытии. Если выключено — только сообщает о ней.',
+    checkUpdate: 'Проверить обновления', updChecking: 'Проверка…', updLatest: 'У вас последняя версия.',
+    updAvailable: 'Найдена новая версия: {v}', updDownloading: 'Загрузка… {p}%', updDownloaded: 'Версия {v} загружена и готова к установке',
+    updInstall: 'Перезапустить и установить', updError: 'Ошибка обновления: {e}', updDev: 'Обновления работают только в установленной версии.',
+    onbNext: 'Далее', onbDone: 'Начать', onbSkip: 'Пропустить',
+    onbScanT: 'Найдите свои игры', onbScanD: 'Arcadia сама находит игры из Steam, Epic, Xbox и ярлыки на рабочем столе.',
+    onbCardT: 'Нажмите, чтобы играть', onbCardD: 'Нажмите на карточку, чтобы запустить игру. Правый клик — избранное, смена обложки, запуск вместе с другими приложениями и не только.',
+    onbDiscordT: 'Быстрый Discord', onbDiscordD: 'Открывайте Discord в один клик: кнопка светится зелёным, пока он запущен, а закрыть его можно кнопкой ×.',
+    onbSettingsT: 'Настройки', onbSettingsD: 'Здесь язык, цвета, обложки, папки и параметры автозапуска.',
   },
 };
 
@@ -386,6 +455,7 @@ function detectLang() {
   if (l.startsWith('ja')) return 'ja';
   if (l.startsWith('ko')) return 'ko';
   if (l.startsWith('es')) return 'es';
+  if (l.startsWith('ru')) return 'ru';
   return 'en';
 }
 
@@ -1496,7 +1566,7 @@ let downloadList = [];
 
 const fmtBytes = (n) => {
   if (!n || n < 0) return '';
-  const u = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const u = t('byteUnits').split(' ');
   let i = 0;
   while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
   return `${n < 10 && i > 0 ? n.toFixed(1) : Math.round(n)} ${u[i]}`;
@@ -1506,9 +1576,9 @@ const fmtDuration = (secs) => {
   if (secs == null || !isFinite(secs)) return '';
   const h = Math.floor(secs / 3600);
   const m = Math.floor((secs % 3600) / 60);
-  if (h) return `${h} sa ${m} dk`;
-  if (m) return `${m} dk`;
-  return `${Math.max(1, Math.round(secs))} sn`;
+  if (h) return t('durHM', { h, m });
+  if (m) return t('durM', { m });
+  return t('durS', { s: Math.max(1, Math.round(secs)) });
 };
 
 const DL_STATE_KEY = {
@@ -1525,7 +1595,7 @@ function downloadRow(d) {
   const meta = [];
   if (d.state === 'downloading' || d.state === 'installing') {
     if (d.total) meta.push(`${fmtBytes(d.downloaded)} / ${fmtBytes(d.total)}`);
-    if (d.speed > 0) meta.push(`${fmtBytes(d.speed)}/s`);
+    if (d.speed > 0) meta.push(t('dlSpeed', { b: fmtBytes(d.speed) }));
     if (d.eta) meta.push(t('dlEta', { t: fmtDuration(d.eta) }));
   } else if (d.state === 'error') {
     meta.push(d.error || '');
@@ -2105,7 +2175,7 @@ function buildSettings() {
   const g3 = el('div', 'setting-group');
   g3.appendChild(el('h3', null, esc(t('settingsLanguage'))));
   const langSel = el('select', 'select select-full');
-  for (const [code, name] of [['tr', 'Türkçe'], ['en', 'English'], ['de', 'Deutsch'], ['ja', '日本語'], ['ko', '한국어'], ['es', 'Español']]) {
+  for (const [code, name] of [['tr', 'Türkçe'], ['en', 'English'], ['de', 'Deutsch'], ['ja', '日本語'], ['ko', '한국어'], ['es', 'Español'], ['ru', 'Русский']]) {
     const opt = document.createElement('option');
     opt.value = code;
     opt.textContent = name;

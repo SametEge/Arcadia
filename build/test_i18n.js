@@ -1,15 +1,15 @@
 'use strict';
-// Altı dilin de eksiksiz olduğunu doğrular (Electron gerekmez).
+// Tüm dillerin eksiksiz olduğunu doğrular (Electron gerekmez).
 //   node build/test_i18n.js
 //
 // Yeni bir metin eklerken bir dili atlamak kolay; bu test onu yakalar.
-// İngilizce referans alınır: İngilizcede olan her anahtar diğer beş dilde de
+// İngilizce referans alınır: İngilizcede olan her anahtar diğer dillerde de
 // bulunmalı, fazladan/yazım hatası anahtar da olmamalı.
 
 const fs = require('fs');
 const path = require('path');
 
-const LANGS = ['tr', 'en', 'de', 'ja', 'ko', 'es'];
+const LANGS = ['tr', 'en', 'de', 'ja', 'ko', 'es', 'ru'];
 let pass = 0, fail = 0;
 const check = (name, cond, extra) => {
   if (cond) { pass++; console.log('  PASS  ' + name); }
@@ -35,7 +35,7 @@ function extractI18N(src) {
 function compare(label, table) {
   console.log('\n' + label);
   const present = LANGS.filter((l) => table[l]);
-  check('6 dilin hepsi var', present.length === LANGS.length, present);
+  check(`${LANGS.length} dilin hepsi var`, present.length === LANGS.length, present);
 
   const ref = Object.keys(table.en || {});
   check('ingilizce anahtar sayisi > 0', ref.length > 0, ref.length);
@@ -58,8 +58,8 @@ function compare(label, table) {
   }
   check('bos metin yok', blanks.length === 0, blanks);
 
-  // {t}, {n} gibi yer tutucular her dilde aynı olmalı; yoksa metin bozuk çıkar.
-  const slots = (s) => (String(s).match(/\{[a-z]\}/g) || []).sort().join(',');
+  // {t}, {n}, {names} gibi yer tutucular her dilde aynı olmalı; yoksa metin bozuk çıkar.
+  const slots = (s) => (String(s).match(/\{[a-z]+\}/g) || []).sort().join(',');
   const mismatched = [];
   for (const k of ref) {
     const want = slots(table.en[k]);

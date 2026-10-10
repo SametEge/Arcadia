@@ -50,6 +50,13 @@ const STRINGS = {
     pickFolderTitle: 'Elegir una carpeta de juegos para analizar',
     noLaunchTarget: 'No se encontró destino de inicio para este juego.',
   },
+  ru: {
+    trayShow: 'Открыть', trayQuit: 'Выход', trayTopPlayed: 'Чаще всего',
+    addGameTitle: 'Добавить игру', gamesAndShortcuts: 'Игры и ярлыки', allFiles: 'Все файлы',
+    pickCoverTitle: 'Выбрать обложку', images: 'Изображения',
+    pickFolderTitle: 'Выберите папку с играми для сканирования',
+    noLaunchTarget: 'Не найдено, как запустить эту игру.',
+  },
 };
 
 // The language is read lazily from settings on every call, so switching it in

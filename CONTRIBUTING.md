@@ -39,7 +39,7 @@ real games needs Windows.
 
 - **Match the surrounding code.** Plain CommonJS, no build step, no framework in
   the renderer. Comments explain *why*, not *what*.
-- **Six languages, always.** Every new UI string goes into all six tables of
+- **Seven languages, always.** Every new UI string goes into all seven tables of
   `I18N` in `renderer/app.js` (and `src/i18n.js` for native dialogs and the
   tray). `build/test_i18n.js` fails if a language is missing a key. If you
   can't translate a string, add the English text and say so in the PR.

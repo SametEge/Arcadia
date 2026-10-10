@@ -10,6 +10,17 @@ before tagging a release, move the **Unreleased** notes under a new
 
 ## [Unreleased]
 
+### Added
+
+- **Russian** (Русский) as the seventh language — the whole UI, the tray and
+  file dialogs, and a Microsoft Store listing. It's picked automatically on a
+  Russian Windows.
+
+### Fixed
+
+- Download time left showed Turkish units ("5 dk") in every language; time,
+  size and speed units now come from each language's dictionary.
+
 ## [1.0.4] — 2026-09-30
 
 ### Fixed

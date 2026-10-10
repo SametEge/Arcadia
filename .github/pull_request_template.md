@@ -9,6 +9,6 @@
 ## Checklist
 
 - [ ] `npm test` passes
-- [ ] New UI text is added in all six languages (`renderer/app.js`, and `src/i18n.js` for dialogs and the tray)
+- [ ] New UI text is added in all seven languages (`renderer/app.js`, and `src/i18n.js` for dialogs and the tray)
 - [ ] User-facing changes are noted under **Unreleased** in `CHANGELOG.md`
 - [ ] No tokens, cookies or personal paths in the code, tests or screenshots

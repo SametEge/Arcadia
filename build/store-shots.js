@@ -1,7 +1,7 @@
 'use strict';
 // Dev helper behind `electron . --store-shots`: saves the Microsoft Store
 // screenshots to dist/store-screenshots/ (1920×1080, one set per UI language —
-// all six, or just some with STORE_SHOT_LANGS=de,ja). main.js calls it once the
+// all seven, or just some with STORE_SHOT_LANGS=de,ja). main.js calls it once the
 // window is ready, then quits.
 //
 // Arcadia allows one instance per profile, so while it's running, point this
@@ -23,7 +23,7 @@ const OUT = path.join(ROOT, 'dist', 'store-screenshots');
 const W = 1920;
 const H = 1080;
 const MODALS = ['settings-modal', 'random-modal', 'accounts-modal', 'downloads-modal'];
-const ALL_LANGS = ['en', 'tr', 'de', 'ja', 'ko', 'es'];
+const ALL_LANGS = ['en', 'tr', 'de', 'ja', 'ko', 'es', 'ru'];
 const LANGS = (process.env.STORE_SHOT_LANGS || ALL_LANGS.join(',')).split(',').map((s) => s.trim()).filter(Boolean);
 // Games whose cover art is fine for any age rating, for the random-picker shot.
 const GENTLE = ['Stardew Valley', 'GRIS', 'Unpacking', 'Machinarium', 'Celeste', 'Subnautica', 'It Takes Two', 'FEZ', 'Slay the Spire'];

@@ -11,8 +11,8 @@ publisher to review; fields marked **(you decide)** need an answer only you can 
 - **Store ID:** 9N22381XP9S9 — https://apps.microsoft.com/detail/9N22381XP9S9
   (works once the app is published)
 - **Package identity:** `SametEge.ArcadiaLauncher`, already set in `build.appx`.
-- **Languages:** the package declares all six UI languages (en-US, tr-TR, de-DE,
-  ja-JP, ko-KR, es-ES), so the Store shows them all — and every one of them
+- **Languages:** the package declares all seven UI languages (en-US, tr-TR, de-DE,
+  ja-JP, ko-KR, es-ES, ru-RU), so the Store shows them all — and every one of them
   needs its own listing below. Screenshots for each come from
   `electron . --store-shots` (`dist/store-screenshots/<lang>-*.png`).
 - **Search terms** are generic on purpose: other companies' trademarks (Steam,
@@ -97,7 +97,7 @@ All your games from Steam, Epic, Xbox, GOG, EA and Ubisoft in one beautiful libr
 - No duplicates when the same game appears in more than one store
 - "What should I play?" random game picker
 - Favorites, search and sorting by name, recently played or rating
-- Six languages; minimalist dark design
+- Seven languages; minimalist dark design
 - Free, open source, no ads and no data collection
 
 **Search terms** (up to 7)
@@ -142,7 +142,7 @@ Steam, Epic, Xbox, GOG, EA ve Ubisoft oyunların tek bir şık kütüphanede.
 - Aynı oyun birden fazla mağazada olsa bile tek kart
 - "Ne oynasam?" rastgele oyun seçici
 - Favoriler, arama; ada, son oynamaya ya da puana göre sıralama
-- Altı dil; sade, koyu tasarım
+- Yedi dil; sade, koyu tasarım
 - Ücretsiz, açık kaynak, reklamsız ve veri toplamaz
 
 **Arama terimleri** (en fazla 7)
@@ -182,7 +182,7 @@ Alle deine Spiele von Steam, Epic, Xbox, GOG, EA und Ubisoft in einer schönen B
 - Keine Duplikate, wenn ein Spiel in mehreren Stores vorkommt
 - „Was soll ich spielen?“ – Zufallsauswahl
 - Favoriten, Suche und Sortierung nach Name, zuletzt gespielt oder Wertung
-- Sechs Sprachen; minimalistisches dunkles Design
+- Sieben Sprachen; minimalistisches dunkles Design
 - Kostenlos, Open Source, ohne Werbung und ohne Datensammlung
 
 **Suchbegriffe**
@@ -222,7 +222,7 @@ Steam、Epic、Xbox、GOG、EA、Ubisoft のゲームをひとつの美しいラ
 - 同じゲームが複数のストアにあっても重複しない
 - 「何をプレイする？」ランダム選択
 - お気に入り、検索、名前・最近のプレイ・評価での並べ替え
-- 6 言語に対応、ミニマルなダークデザイン
+- 7 言語に対応、ミニマルなダークデザイン
 - 無料、オープンソース、広告なし、データ収集なし
 
 **検索語句**
@@ -262,7 +262,7 @@ Steam, Epic, Xbox, GOG, EA, Ubisoft 게임을 하나의 멋진 라이브러리�
 - 같은 게임이 여러 스토어에 있어도 중복 없음
 - "뭘 할까?" 무작위 게임 선택
 - 즐겨찾기, 검색, 이름·최근 플레이·평점순 정렬
-- 6개 언어 지원, 미니멀한 다크 디자인
+- 7개 언어 지원, 미니멀한 다크 디자인
 - 무료, 오픈 소스, 광고 없음, 데이터 수집 없음
 
 **검색어**
@@ -305,7 +305,7 @@ Todos tus juegos de Steam, Epic, Xbox, GOG, EA y Ubisoft en una sola biblioteca 
 - Sin duplicados cuando un juego aparece en varias tiendas
 - Selector aleatorio «¿A qué juego?»
 - Favoritos, búsqueda y orden por nombre, jugados recientemente o puntuación
-- Seis idiomas; diseño oscuro y minimalista
+- Siete idiomas; diseño oscuro y minimalista
 - Gratis, de código abierto, sin anuncios y sin recopilación de datos
 
 **Términos de búsqueda**
@@ -315,3 +315,43 @@ lanzador de juegos · biblioteca de juegos · juegos · lanzador · colección d
 **Términos de licencia adicionales**
 
 Arcadia es software de código abierto publicado bajo la licencia MIT: https://github.com/SametEge/Arcadia/blob/main/LICENSE
+
+---
+
+## Store listing — Русский (ru-RU)
+
+**Описание**
+
+Arcadia собирает все ваши игры в одну аккуратную и быструю библиотеку — неважно, в каком магазине они куплены.
+
+Она сама находит игры, установленные на компьютере: Steam, Epic Games, Xbox / Game Pass, GOG, EA app, Ubisoft Connect, Riot и ярлыки на рабочем столе. Привяжите аккаунты магазинов — и в библиотеке появятся купленные, но не установленные игры, с настоящими обложками. Нажмите на игру, чтобы играть; нажмите на неустановленную — магазин начнёт её устанавливать, а Arcadia покажет ход загрузки.
+
+Игры, купленные в Steam и при этом появившиеся в библиотеке EA или Ubisoft, остаются одной игрой, а не двумя. Коллекции Steam переносятся как списки, а свои списки можно составлять из игр всех магазинов сразу. Не можете выбрать? Пусть Arcadia предложит случайную игру.
+
+Arcadia бесплатна, с открытым исходным кодом и уважает вашу приватность: у неё нет сервера, она ничего не собирает, а пароли от магазинов вы вводите только на их собственных страницах входа.
+
+**Краткое описание**
+
+Все ваши игры из Steam, Epic, Xbox, GOG, EA и Ubisoft в одной красивой библиотеке.
+
+**Возможности продукта**
+
+- Одна библиотека для Steam, Epic Games, Xbox / Game Pass, GOG, EA app и Ubisoft Connect
+- Сама находит установленные игры, без настройки
+- Привязка аккаунтов магазинов, чтобы видеть купленные, но не установленные игры
+- Установка из Arcadia с отображением хода загрузки
+- Настоящие обложки и оценки Metacritic
+- Коллекции Steam в виде списков и свои списки из игр всех магазинов
+- Без дубликатов, когда одна игра есть в нескольких магазинах
+- «Во что поиграть?» — выбор случайной игры
+- Избранное, поиск и сортировка по названию, недавнему запуску или оценке
+- Семь языков; минималистичный тёмный дизайн
+- Бесплатно, с открытым кодом, без рекламы и сбора данных
+
+**Условия поиска**
+
+лаунчер игр · библиотека игр · игры · лаунчер · коллекция игр · игры для пк · менеджер игр
+
+**Дополнительные условия лицензии**
+
+Arcadia — программа с открытым исходным кодом, распространяемая по лицензии MIT: https://github.com/SametEge/Arcadia/blob/main/LICENSE
